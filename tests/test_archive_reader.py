@@ -1,0 +1,457 @@
+from fastar import ArchiveReader
+from random import randint
+import os
+import hashlib
+import tarfile
+import pytest
+import psutil
+
+
+def test_open_raises_on_unsupported_mode(archive_path):
+    with pytest.raises(
+        RuntimeError, match="unsupported mode; only 'r' and 'r:gz' are supported"
+    ):
+        ArchiveReader.open(archive_path, "invalid-mode")
+
+
+def test_close_closes_archive(archive_path, write_mode, read_mode):
+    with tarfile.open(archive_path, write_mode) as archive:
+        pass
+
+    process = psutil.Process()
+    assert process.open_files() == []
+
+    archive = ArchiveReader.open(archive_path, read_mode)
+
+    open_files = process.open_files()
+    assert len(open_files) == 1
+    assert open_files[0].path == str(archive_path)
+
+    archive.close()
+    assert process.open_files() == []
+
+
+def test_context_manager_closes_archive(archive_path, write_mode, read_mode):
+    with tarfile.open(archive_path, write_mode):
+        pass
+
+    process = psutil.Process()
+    assert process.open_files() == []
+
+    with ArchiveReader.open(archive_path, read_mode):
+        open_files = process.open_files()
+        assert len(open_files) == 1
+        assert open_files[0].path == str(archive_path)
+
+    assert process.open_files() == []
+
+
+def test_extract_raises_if_archive_is_already_closed(
+    archive_path, write_mode, read_mode
+):
+    with tarfile.open(archive_path, write_mode):
+        pass
+
+    reader = ArchiveReader.open(archive_path, read_mode)
+    reader.close()
+
+    with pytest.raises(RuntimeError, match="archive is already closed"):
+        reader.extract("some/path")
+
+
+def test_extract_extracts_files(
+    source_path, target_path, archive_path, write_mode, read_mode
+):
+    input_file = source_path / "file.txt"
+    input_file.touch()
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_file, arcname="file.txt")
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.extract(target_path)
+
+    output_file = target_path / "file.txt"
+    assert output_file.exists()
+    assert output_file.is_file()
+
+
+def test_extract_extracts_directories(
+    source_path, target_path, archive_path, write_mode, read_mode
+):
+    input_dir = source_path / "dir"
+    input_dir.mkdir()
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_dir, arcname="dir/")
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.extract(target_path)
+
+    output_dir = target_path / "dir"
+    assert output_dir.exists()
+    assert output_dir.is_dir()
+
+
+def test_extract_extracts_nested_files(
+    source_path, target_path, archive_path, write_mode, read_mode
+):
+    input_file = source_path / "file.txt"
+    input_file.touch()
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_file, arcname="deeply/nested/file.txt")
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.extract(target_path)
+
+    output_nested_file = target_path / "deeply" / "nested" / "file.txt"
+    assert output_nested_file.exists()
+    assert output_nested_file.is_file()
+
+
+def test_extract_extracts_nested_directories(
+    source_path, target_path, archive_path, write_mode, read_mode
+):
+    input_dir = source_path / "dir"
+    input_dir.mkdir()
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_dir, arcname="deeply/nested/dir/")
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.extract(target_path)
+
+    output_nested_dir = target_path / "deeply" / "nested" / "dir"
+    assert output_nested_dir.exists()
+    assert output_nested_dir.is_dir()
+
+
+def test_extract_extracts_all_contents(
+    source_path, target_path, archive_path, write_mode, read_mode
+):
+    input_file = source_path / "file.txt"
+    input_file.touch()
+
+    input_dir = source_path / "dir"
+    input_dir.mkdir()
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_dir, arcname="dir1")
+        archive.add(input_file, arcname="file1.txt")
+        archive.add(input_file, arcname="dir1/file2.txt")
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.extract(target_path)
+
+    output_dir1 = target_path / "dir1"
+    assert output_dir1.exists()
+    assert output_dir1.is_dir()
+
+    output_file1 = target_path / "file1.txt"
+    assert output_file1.exists()
+    assert output_file1.is_file()
+
+    output_file2 = output_dir1 / "file2.txt"
+    assert output_file2.exists()
+    assert output_file2.is_file()
+
+
+def test_extract_preserves_file_contents(
+    source_path, target_path, archive_path, write_mode, read_mode
+):
+    input_file = source_path / "file.txt"
+    input_file.write_text("Test content")
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_file, arcname="file.txt")
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.extract(target_path)
+
+    output_file = target_path / "file.txt"
+    assert output_file.read_text() == "Test content"
+
+
+@pytest.mark.parametrize("permissions", [0o644, 0o600, 0o755, 0o700])
+def test_extract_preserves_file_permissions(
+    source_path, target_path, archive_path, write_mode, read_mode, permissions
+):
+    input_file = source_path / "file.txt"
+    input_file.touch()
+    input_file.chmod(permissions)
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_file, arcname="file.txt")
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.extract(target_path)
+
+    output_file = target_path / "file.txt"
+    assert output_file.stat().st_mode & 0o777 == permissions
+
+
+def test_extract_preserves_file_modification_time(
+    source_path, target_path, archive_path, write_mode, read_mode
+):
+    input_file = source_path / "file.txt"
+    input_file.touch()
+
+    timestamp = randint(1_600_000_000, 1_700_000_000)
+    os.utime(input_file, (timestamp, timestamp))
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_file, arcname="file.txt")
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.extract(target_path)
+
+    output_file = target_path / "file.txt"
+    assert output_file.stat().st_mtime == timestamp
+
+
+@pytest.mark.parametrize("permissions", [0o755, 0o700, 0o775, 0o777])
+def test_extract_preserves_directory_permissions(
+    source_path, target_path, archive_path, write_mode, read_mode, permissions
+):
+    input_dir = source_path / "dir"
+    input_dir.mkdir()
+    input_dir.chmod(permissions)
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_dir, arcname="dir/")
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.extract(target_path)
+
+    output_dir = target_path / "dir"
+    assert output_dir.stat().st_mode & 0o777 == permissions
+
+
+@pytest.mark.parametrize("dir_name", ["dir", "dir/"])
+def test_extract_handles_trailing_slash_in_directory_name(
+    source_path, target_path, archive_path, write_mode, read_mode, dir_name
+):
+    input_dir = source_path / dir_name
+    input_dir.mkdir()
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_dir, arcname=dir_name)
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.extract(target_path)
+
+    output_dir = target_path / "dir"
+    assert output_dir.exists()
+    assert output_dir.is_dir()
+
+
+def test_extract_overwrites_contents_of_conflicting_files(
+    source_path, target_path, archive_path, write_mode, read_mode
+):
+    existing_file = target_path / "file.txt"
+    existing_file.write_text("Old content")
+
+    input_file = source_path / "file.txt"
+    input_file.write_text("New content")
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_file, arcname="file.txt")
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.extract(target_path)
+
+    output_file = target_path / "file.txt"
+    assert output_file.read_text() == "New content"
+
+
+def test_extract_overwrites_permissions_of_conflicting_files(
+    source_path, target_path, archive_path, write_mode, read_mode
+):
+    existing_file = target_path / "file.txt"
+    existing_file.touch()
+    os.chmod(existing_file, 0o700)
+
+    input_file = source_path / "file.txt"
+    input_file.touch()
+    os.chmod(input_file, 0o755)
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_file, arcname="file.txt")
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.extract(target_path)
+
+    output_file = target_path / "file.txt"
+    assert output_file.exists()
+    assert output_file.is_file()
+    assert output_file.stat().st_mode & 0o777 == 0o755
+
+
+def test_extract_overwrites_permissions_of_conflicting_directories(
+    source_path, target_path, archive_path, write_mode, read_mode
+):
+    existing_dir = target_path / "dir"
+    existing_dir.mkdir()
+    os.chmod(existing_dir, 0o700)
+
+    input_dir = source_path / "dir"
+    input_dir.mkdir()
+    os.chmod(input_dir, 0o755)
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_dir, arcname="dir/")
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.extract(target_path)
+
+    output_dir = target_path / "dir"
+    assert output_dir.exists()
+    assert output_dir.is_dir()
+    assert output_dir.stat().st_mode & 0o777 == 0o755
+
+
+def test_extract_keeps_contents_of_conflicting_directories(
+    source_path, target_path, archive_path, write_mode, read_mode
+):
+    existing_dir = target_path / "dir"
+    existing_dir.mkdir()
+    os.chmod(existing_dir, 0o700)
+
+    existing_file = existing_dir / "existing_file.txt"
+    existing_file.write_text("Existing content")
+
+    input_dir = source_path / existing_dir.name
+    input_dir.mkdir()
+    os.chmod(input_dir, 0o755)
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_dir, arcname=existing_dir.name)
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.extract(target_path)
+
+    output_dir = target_path / "dir"
+    assert output_dir.exists()
+    assert output_dir.is_dir()
+    assert output_dir.stat().st_mode & 0o777 == 0o755
+
+    output_existing_file = output_dir / "existing_file.txt"
+    assert output_existing_file.exists()
+    assert output_existing_file.is_file()
+    assert output_existing_file.read_text() == "Existing content"
+
+
+def test_extract_raises_if_file_would_overwrite_existing_directory(
+    source_path, target_path, archive_path, write_mode, read_mode
+):
+    input_file = source_path / "conflict"
+    input_file.touch()
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_file, arcname="conflict")
+
+    conflict_path = target_path / "conflict"
+    conflict_path.mkdir()
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        with pytest.raises(IsADirectoryError, match="failed to unpack"):
+            reader.extract(target_path)
+
+
+def test_extract_raises_if_directory_would_overwrite_existing_file(
+    source_path, target_path, archive_path, write_mode, read_mode
+):
+    input_dir = source_path / "conflict"
+    input_dir.mkdir()
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_dir, arcname="conflict/")
+
+    conflict_path = target_path / "conflict"
+    conflict_path.touch()
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        with pytest.raises(FileExistsError, match="failed to unpack"):
+            reader.extract(target_path)
+
+
+def test_extract_extracts_absolute_paths_relative_to_the_target_dir(
+    source_path, target_path, archive_path, write_mode, read_mode
+):
+    input_file = source_path / "file.txt"
+    input_file.touch()
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_file, arcname="/absolute/path/file.txt")
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.extract(target_path)
+
+    output_file = target_path / "absolute" / "path" / "file.txt"
+    assert output_file.exists()
+    assert output_file.is_file()
+
+
+@pytest.mark.parametrize("arcname", ["../outside.txt", "parent/../inside.txt"])
+def test_extract_ignores_relative_paths_outside_the_target_dir(
+    source_path, target_path, archive_path, write_mode, read_mode, arcname
+):
+    input_file = source_path / "file.txt"
+    input_file.touch()
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_file, arcname=arcname)
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.extract(target_path / "nested")
+
+    assert list(target_path.glob("**/*.txt")) == []
+
+
+def test_extract_creates_target_directory_if_it_does_not_exist(
+    source_path, target_path, archive_path, write_mode, read_mode
+):
+    input_file = source_path / "file.txt"
+    input_file.touch()
+
+    nested_target_path = target_path / "nested" / "dir"
+    assert not nested_target_path.exists()
+
+    with tarfile.open(archive_path, write_mode):
+        pass
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.extract(nested_target_path)
+
+    assert nested_target_path.exists()
+    assert nested_target_path.is_dir()
+
+
+def test_extract_does_nothing_on_empty_archive(
+    target_path, archive_path, write_mode, read_mode
+):
+    with tarfile.open(archive_path, write_mode):
+        pass
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.extract(target_path)
+
+    assert not any(target_path.iterdir())
+
+
+def test_extract_does_not_alter_archive(
+    source_path, target_path, archive_path, write_mode, read_mode
+):
+    input_file = source_path / "file.txt"
+    input_file.touch()
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_file, arcname="file.txt")
+
+    archive_hash = hashlib.sha256(archive_path.read_bytes()).hexdigest()
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.extract(target_path)
+
+    assert hashlib.sha256(archive_path.read_bytes()).hexdigest() == archive_hash

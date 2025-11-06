@@ -15,10 +15,15 @@ build-backend = "maturin"
 [dependency-groups]
 dev = [
     "maturin>=1.9.6",
+    "mypy>=1.14.1",
     "psutil>=7.1.2",
     "pytest>=8.3.5",
     "ruff>=0.14.2",
+    "types-psutil>=6.1.0.20241221",
 ]
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
+
+[tool.mypy]
+check_untyped_defs = true

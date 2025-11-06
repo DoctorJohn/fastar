@@ -18,9 +18,7 @@ def test_open_raises_on_unsupported_mode(archive_path):
         ("w:gz", fastar.ArchiveWriter),
     ],
 )
-def test_open_returns_expected_archive_writer(
-    archive_path, open_mode, expected_class
-):
+def test_open_returns_expected_archive_writer(archive_path, open_mode, expected_class):
     with fastar.open(archive_path, open_mode) as archive:
         assert isinstance(archive, expected_class)
 

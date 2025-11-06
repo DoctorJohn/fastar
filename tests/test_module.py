@@ -8,7 +8,7 @@ def test_open_raises_on_unsupported_mode(archive_path):
         RuntimeError,
         match="unsupported mode; supported modes are 'w', 'w:gz', 'r', 'r:gz'",
     ):
-        fastar.open(archive_path, "invalid-mode")
+        fastar.open(archive_path, "invalid-mode")  # type: ignore[call-overload]
 
 
 @pytest.mark.parametrize(

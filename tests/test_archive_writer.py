@@ -8,15 +8,15 @@ def test_open_raises_on_unsupported_mode(archive_path):
     with pytest.raises(
         RuntimeError, match="unsupported mode; only 'w' and 'w:gz' are supported"
     ):
-        ArchiveWriter.open(archive_path, "invalid-mode")
+        ArchiveWriter.open(archive_path, "invalid-mode")  # type: ignore[arg-type]
 
 
 def test_opening_and_closing_creates_empty_archive(archive_path, write_mode, read_mode):
     archive = ArchiveWriter.open(archive_path, write_mode)
     archive.close()
 
-    with tarfile.open(archive_path, read_mode) as archive:
-        assert archive.getnames() == []
+    with tarfile.open(archive_path, read_mode) as tarfile_archive:
+        assert tarfile_archive.getnames() == []
 
 
 def test_context_manager_created_empty_archive(archive_path, write_mode, read_mode):

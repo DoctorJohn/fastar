@@ -11,11 +11,11 @@ def test_open_raises_on_unsupported_mode(archive_path):
     with pytest.raises(
         RuntimeError, match="unsupported mode; only 'r' and 'r:gz' are supported"
     ):
-        ArchiveReader.open(archive_path, "invalid-mode")
+        ArchiveReader.open(archive_path, "invalid-mode")  # type: ignore[arg-type]
 
 
 def test_close_closes_archive(archive_path, write_mode, read_mode):
-    with tarfile.open(archive_path, write_mode) as archive:
+    with tarfile.open(archive_path, write_mode):
         pass
 
     process = psutil.Process()

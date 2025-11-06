@@ -1,5 +1,19 @@
 # Fastar
 
+[![Versions][versions-image]][versions-url]
+[![PyPI][pypi-image]][pypi-url]
+[![Downloads][downloads-image]][downloads-url]
+[![License][license-image]][license-url]
+
+[versions-image]: https://img.shields.io/pypi/pyversions/fastar
+[versions-url]: https://github.com/DoctorJohn/fastar/blob/main/pyproject.toml
+[pypi-image]: https://img.shields.io/pypi/v/fastar
+[pypi-url]: https://pypi.org/project/fastar/
+[downloads-image]: https://img.shields.io/pypi/dm/fastar
+[downloads-url]: https://pypi.org/project/fastar/
+[license-image]: https://img.shields.io/pypi/l/fastar
+[license-url]: https://github.com/DoctorJohn/fastar/blob/main/LICENSE
+
 High-level bindings for the Rust [tar](https://crates.io/crates/tar) crate.
 
 ## Installation

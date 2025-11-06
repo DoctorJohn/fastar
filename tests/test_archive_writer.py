@@ -1,6 +1,14 @@
 import tarfile
 from fastar import ArchiveWriter
 import pytest
+import psutil
+
+
+def test_open_raises_on_unsupported_mode(archive_path):
+    with pytest.raises(
+        RuntimeError, match="unsupported mode; only 'w' and 'w:gz' are supported"
+    ):
+        ArchiveWriter.open(archive_path, "invalid-mode")
 
 
 def test_opening_and_closing_creates_empty_archive(archive_path, write_mode, read_mode):
@@ -19,11 +27,27 @@ def test_context_manager_created_empty_archive(archive_path, write_mode, read_mo
         assert archive.getnames() == []
 
 
-def test_open_raises_on_unsupported_mode(archive_path):
-    with pytest.raises(
-        RuntimeError, match="unsupported mode; only 'w' and 'w:gz' are supported"
-    ):
-        ArchiveWriter.open(archive_path, "invalid-mode")
+def test_close_closes_archive(archive_path, write_mode):
+    archive = ArchiveWriter.open(archive_path, write_mode)
+
+    process = psutil.Process()
+    open_files = process.open_files()
+    assert len(open_files) == 1
+    assert open_files[0].path == str(archive_path)
+
+    archive.close()
+    assert process.open_files() == []
+
+
+def test_context_manager_closes_archive(archive_path, write_mode):
+    process = psutil.Process()
+
+    with ArchiveWriter.open(archive_path, write_mode):
+        open_files = process.open_files()
+        assert len(open_files) == 1
+        assert open_files[0].path == str(archive_path)
+
+    assert process.open_files() == []
 
 
 def test_add_raises_if_archive_is_already_closed(tmp_path, archive_path, write_mode):

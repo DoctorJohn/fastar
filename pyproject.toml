@@ -1,12 +1,13 @@
 [project]
 name = "fastar"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dynamic = ["version"]
+dependencies = []
 
 [build-system]
 requires = ["maturin>=1.9,<2.0"]
@@ -15,11 +16,11 @@ build-backend = "maturin"
 [dependency-groups]
 dev = [
     "maturin>=1.9.6",
-    "mypy>=1.14.1",
+    "mypy>=1.18.2",
     "psutil>=7.1.2",
     "pytest>=8.3.5",
     "ruff>=0.14.2",
-    "types-psutil>=6.1.0.20241221",
+    "types-psutil>=7.0.0.20251001",
 ]
 
 [tool.maturin]

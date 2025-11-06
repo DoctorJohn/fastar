@@ -47,7 +47,7 @@ print(extracted_file.read_text())  # Hello, Fastar!
 
 ## Development
 
-1. Install dependencies into a virtual env: uv sync
+1. Install dependencies into a virtual env: `uv sync`
 2. Make changes to the code and tests
-3. Build the package: uv run maturin develop
-4. Run the tests: uv run pytest
+3. Build the package: `uv run maturin develop`
+4. Run the tests: `uv run pytest`

@@ -750,7 +750,9 @@ def test_directory_permissions_are_preserved(
         assert member.mode & 0o777 == permissions
 
 
-def test_symlinks_are_dereferenced(tmp_path, archive_path, write_mode, read_mode):
+def test_add_dereferences_symlinks_if_option_is_true(
+    tmp_path, archive_path, write_mode, read_mode
+):
     target_file_path = tmp_path / "target.txt"
     target_file_content = "This is some test content."
     target_file_path.write_text(target_file_content)
@@ -759,7 +761,7 @@ def test_symlinks_are_dereferenced(tmp_path, archive_path, write_mode, read_mode
     symlink_path.symlink_to(target_file_path)
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(symlink_path)
+        archive.add(symlink_path, dereference=True)
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["symlink.txt"]
@@ -770,6 +772,55 @@ def test_symlinks_are_dereferenced(tmp_path, archive_path, write_mode, read_mode
 
         extracted_content = extracted_file.read().decode()
         assert extracted_content == target_file_content
+
+
+def test_add_does_not_dereference_symlinks_if_option_is_false(
+    tmp_path, archive_path, write_mode, read_mode
+):
+    target_file_path = tmp_path / "target.txt"
+    target_file_path.touch()
+
+    symlink_path = tmp_path / "symlink.txt"
+    symlink_path.symlink_to(target_file_path.relative_to(symlink_path.parent))
+
+    with ArchiveWriter.open(archive_path, write_mode) as archive:
+        archive.add(symlink_path, dereference=False)
+
+    with tarfile.open(archive_path, read_mode) as archive:
+        assert archive.getnames() == ["symlink.txt"]
+        member = archive.getmember("symlink.txt")
+        assert member.issym()
+        assert member.linkname == "target.txt"
+
+
+def test_add_does_not_dereference_symlinks_by_default(
+    tmp_path, archive_path, write_mode, read_mode
+):
+    target_file_path = tmp_path / "target.txt"
+    target_file_path.touch()
+
+    symlink_path = tmp_path / "symlink.txt"
+    symlink_path.symlink_to(target_file_path.relative_to(symlink_path.parent))
+
+    with ArchiveWriter.open(archive_path, write_mode) as archive:
+        archive.add(symlink_path)
+
+    with tarfile.open(archive_path, read_mode) as archive:
+        assert archive.getnames() == ["symlink.txt"]
+        member = archive.getmember("symlink.txt")
+        assert member.issym()
+        assert member.linkname == "target.txt"
+
+
+def test_add_raises_if_dereferencing_symlink_to_non_existing_path(
+    tmp_path, archive_path, write_mode
+):
+    symlink_path = tmp_path / "symlink.txt"
+    symlink_path.symlink_to("non_existing_target.txt")
+
+    with ArchiveWriter.open(archive_path, write_mode) as archive:
+        with pytest.raises(RuntimeError, match="path does not exist"):
+            archive.add(symlink_path, dereference=True)
 
 
 def test_file_addition_order_is_preserved(

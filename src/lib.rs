@@ -54,12 +54,20 @@ impl ArchiveWriter {
         }
     }
 
-    #[pyo3(signature = (path, arcname=None, recursive=true))]
-    fn add(&mut self, path: PathBuf, arcname: Option<String>, recursive: bool) -> PyResult<()> {
+    #[pyo3(signature = (path, arcname=None, recursive=true, dereference=false))]
+    fn add(
+        &mut self,
+        path: PathBuf,
+        arcname: Option<String>,
+        recursive: bool,
+        dereference: bool,
+    ) -> PyResult<()> {
         let builder = self
             .builder
             .as_mut()
             .ok_or_else(|| PyRuntimeError::new_err("archive is already closed"))?;
+
+        builder.follow_symlinks(dereference);
 
         let default_name = || -> PyResult<String> {
             let name = Path::new(&path)

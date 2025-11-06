@@ -29,6 +29,7 @@ class ArchiveWriter:
         path: str | Path | PathLike[str],
         arcname: str | None = None,
         recursive: bool = True,
+        dereference: bool = False,
     ) -> None:
         """
         Add a file or directory to the archive.
@@ -37,6 +38,7 @@ class ArchiveWriter:
             path: Path to the file or directory to add
             arcname: Name to use in the archive (defaults to the filename)
             recursive: If True and path is a directory, add all contents recursively
+            dereference: If True, add the target of symlinks instead of the symlink itself
 
         Raises:
             RuntimeError: If the archive is closed or the path doesn't exist

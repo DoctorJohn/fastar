@@ -1,5 +1,9 @@
 [project]
 name = "fastar"
+description = "High-level bindings for the Rust tar crate"
+authors = [{ name = "Jonathan Ehwald", email = "github@ehwald.info" }]
+license = "MIT"
+readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
     "Intended Audience :: Developers",
@@ -20,6 +24,11 @@ classifiers = [
 ]
 dynamic = ["version"]
 dependencies = []
+
+[project.urls]
+homepage = "https://github.com/DoctorJohn/fastar"
+repository = "https://github.com/DoctorJohn/fastar"
+documentation = "https://github.com/DoctorJohn/fastar"
 
 [build-system]
 requires = ["maturin>=1.9,<2.0"]

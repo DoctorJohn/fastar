@@ -1,4 +1,4 @@
-from typing import Literal, Optional, Union, overload
+from typing import Literal, overload
 from typing_extensions import Self
 from pathlib import Path
 from os import PathLike
@@ -8,7 +8,7 @@ class ArchiveWriter:
 
     @classmethod
     def open(
-        cls, path: Union[str, Path, PathLike[str]], mode: Literal["w", "w:gz"] = "w:gz"
+        cls, path: str | Path | PathLike[str], mode: Literal["w", "w:gz"] = "w:gz"
     ) -> Self:
         """
         Open a tar archive for writing.
@@ -26,8 +26,8 @@ class ArchiveWriter:
 
     def add(
         self,
-        path: Union[str, Path, PathLike[str]],
-        arcname: Optional[str] = None,
+        path: str | Path | PathLike[str],
+        arcname: str | None = None,
         recursive: bool = True,
     ) -> None:
         """
@@ -61,7 +61,7 @@ class ArchiveReader:
 
     @classmethod
     def open(
-        cls, path: Union[str, Path, PathLike[str]], mode: Literal["r", "r:gz"] = "r:gz"
+        cls, path: str | Path | PathLike[str], mode: Literal["r", "r:gz"] = "r:gz"
     ) -> Self:
         """
         Open a tar archive for reading.
@@ -78,7 +78,7 @@ class ArchiveReader:
             IOError: If the file cannot be opened
         """
 
-    def extract(self, to: Union[str, Path, PathLike[str]]) -> None:
+    def extract(self, to: str | Path | PathLike[str]) -> None:
         """
         Extract all contents of the archive to the specified directory.
 
@@ -100,9 +100,7 @@ class ArchiveReader:
         """Exit the context manager, closing the archive."""
 
 @overload
-def open(
-    path: Union[str, Path, PathLike[str]], mode: Literal["w", "w:gz"]
-) -> ArchiveWriter:
+def open(path: str | Path | PathLike[str], mode: Literal["w", "w:gz"]) -> ArchiveWriter:
     """
     Open a tar archive for writing.
 
@@ -115,9 +113,7 @@ def open(
     """
 
 @overload
-def open(
-    path: Union[str, Path, PathLike[str]], mode: Literal["r", "r:gz"]
-) -> ArchiveReader:
+def open(path: str | Path | PathLike[str], mode: Literal["r", "r:gz"]) -> ArchiveReader:
     """
     Open a tar archive for reading.
 

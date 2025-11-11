@@ -1,0 +1,83 @@
+use flate2::read::GzDecoder;
+use pyo3::exceptions::PyRuntimeError;
+use pyo3::prelude::*;
+use pyo3::types::{PyAny, PyType};
+use std::fs::File;
+use std::io::Read;
+use std::path::PathBuf;
+use tar::Archive;
+
+#[pyclass(unsendable)]
+pub struct ArchiveReader {
+    archive: Option<Archive<Box<dyn Read>>>,
+}
+
+#[pymethods]
+impl ArchiveReader {
+    #[classmethod]
+    #[pyo3(signature = (path, mode="r:gz"))]
+    pub fn open(
+        _cls: &Bound<'_, PyType>,
+        py: Python<'_>,
+        path: PathBuf,
+        mode: &str,
+    ) -> PyResult<Py<ArchiveReader>> {
+        match mode {
+            "r:gz" => {
+                let file = File::open(path)?;
+                let decoder = GzDecoder::new(file);
+                let reader: Box<dyn Read> = Box::new(decoder);
+                let archive = Archive::new(reader);
+                Py::new(
+                    py,
+                    ArchiveReader {
+                        archive: Some(archive),
+                    },
+                )
+            }
+            "r" => {
+                let file = File::open(path)?;
+                let reader: Box<dyn Read> = Box::new(file);
+                let archive = Archive::new(reader);
+                Py::new(
+                    py,
+                    ArchiveReader {
+                        archive: Some(archive),
+                    },
+                )
+            }
+            _ => Err(PyRuntimeError::new_err(
+                "unsupported mode; only 'r' and 'r:gz' are supported",
+            )),
+        }
+    }
+
+    fn extract(&mut self, to: PathBuf) -> PyResult<()> {
+        let archive = self
+            .archive
+            .as_mut()
+            .ok_or_else(|| PyRuntimeError::new_err("archive is already closed"))?;
+
+        archive.unpack(to)?;
+        Ok(())
+    }
+
+    fn close(&mut self) -> PyResult<()> {
+        self.archive.take();
+        Ok(())
+    }
+
+    fn __enter__(py_self: PyRef<'_, Self>) -> PyRef<'_, Self> {
+        py_self
+    }
+
+    fn __exit__(
+        &mut self,
+        _exc_type: Option<Bound<'_, PyAny>>,
+        _exc: Option<Bound<'_, PyAny>>,
+        _tb: Option<Bound<'_, PyAny>>,
+    ) -> PyResult<bool> {
+        self.close()?;
+        Ok(false) // Propagate exceptions if any
+    }
+}

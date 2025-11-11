@@ -4,7 +4,7 @@ description = "High-level bindings for the Rust tar crate"
 authors = [{ name = "Jonathan Ehwald", email = "github@ehwald.info" }]
 license = "MIT"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
@@ -37,12 +37,12 @@ build-backend = "maturin"
 [dependency-groups]
 dev = [
     "maturin>=1.9.6",
-    "mypy>=1.18.2",
-    "pre-commit>=4.3.0",
+    "mypy>=1.14.1",
+    "pre-commit>=3.5.0",
     "psutil>=7.1.2",
     "pytest>=8.3.5",
     "ruff>=0.14.2",
-    "types-psutil>=7.0.0.20251001",
+    "types-psutil>=6.1.0.20241221",
 ]
 
 [tool.maturin]

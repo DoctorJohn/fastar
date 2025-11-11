@@ -1,6 +1,7 @@
 from fastar import ArchiveReader
 from random import randint
 import os
+import sys
 import hashlib
 import tarfile
 import pytest
@@ -191,6 +192,10 @@ def test_extract_preserves_file_permissions(
     assert output_file.stat().st_mode & 0o777 == permissions
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 9),
+    reason="Before 3.9, tarfile perserved mtime in a non-compatible way",
+)
 def test_extract_preserves_file_modification_time(
     source_path, target_path, archive_path, write_mode, read_mode
 ):

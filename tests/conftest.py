@@ -1,4 +1,5 @@
-from typing import Literal, TypeAlias
+from typing import Literal, Tuple
+from typing_extensions import TypeAlias
 from pathlib import Path
 import pytest
 
@@ -27,7 +28,7 @@ def target_path(tmp_path) -> Path:
 
 
 @pytest.fixture(params=[("w", "r"), ("w:gz", "r:gz")])
-def modes(request) -> tuple[WriteMode, ReadMode]:
+def modes(request) -> Tuple[WriteMode, ReadMode]:
     return request.param
 
 

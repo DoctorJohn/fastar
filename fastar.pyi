@@ -3,6 +3,12 @@ from typing_extensions import Self
 from pathlib import Path
 from os import PathLike
 
+class FastarError(Exception):
+    """Base exception for all fastar errors."""
+
+class UnsupportedModeError(FastarError):
+    """Exception raised when an unsupported file mode is used."""
+
 class ArchiveWriter:
     """A tar archive writer that supports compressed and uncompressed formats."""
 
@@ -21,7 +27,7 @@ class ArchiveWriter:
             An ArchiveWriter instance
 
         Raises:
-            RuntimeError: If an unsupported mode is provided
+            UnsupportedModeError: If an unsupported mode is provided
         """
 
     def add(
@@ -76,7 +82,7 @@ class ArchiveReader:
             An ArchiveReader instance
 
         Raises:
-            RuntimeError: If an unsupported mode is provided
+            UnsupportedModeError: If an unsupported mode is provided
             IOError: If the file cannot be opened
         """
 
@@ -114,6 +120,10 @@ def open(
 
     Returns:
         An ArchiveWriter instance
+
+    Raises:
+        UnsupportedModeError: If an unsupported mode is provided
+        IOError: If the file cannot be opened
     """
 
 @overload

@@ -1,3 +1,4 @@
+use crate::errors::UnsupportedModeError;
 use flate2::read::GzDecoder;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
@@ -46,7 +47,7 @@ impl ArchiveReader {
                     },
                 )
             }
-            _ => Err(PyRuntimeError::new_err(
+            _ => Err(UnsupportedModeError::new_err(
                 "unsupported mode; only 'r' and 'r:gz' are supported",
             )),
         }

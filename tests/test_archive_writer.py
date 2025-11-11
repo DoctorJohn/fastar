@@ -1,12 +1,13 @@
 import tarfile
-from fastar import ArchiveWriter
+from fastar import ArchiveWriter, UnsupportedModeError
 import pytest
 import psutil
 
 
 def test_open_raises_on_unsupported_mode(archive_path):
     with pytest.raises(
-        RuntimeError, match="unsupported mode; only 'w' and 'w:gz' are supported"
+        UnsupportedModeError,
+        match="unsupported mode; only 'w' and 'w:gz' are supported",
     ):
         ArchiveWriter.open(archive_path, "invalid-mode")  # type: ignore[arg-type]
 

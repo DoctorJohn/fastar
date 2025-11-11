@@ -12,6 +12,34 @@ def test_open_raises_on_unsupported_mode(archive_path):
         ArchiveWriter.open(archive_path, "invalid-mode")  # type: ignore[arg-type]
 
 
+def test_open_raises_if_file_does_not_exist(write_mode):
+    with pytest.raises(
+        FileNotFoundError,
+        match="No such file or directory",
+    ):
+        ArchiveWriter.open("/non/existing/path/archive.tar", write_mode)
+
+
+def test_open_raises_if_path_is_directory(tmp_path, write_mode):
+    with pytest.raises(
+        IsADirectoryError,
+        match="Is a directory",
+    ):
+        ArchiveWriter.open(tmp_path, write_mode)
+
+
+def test_open_raises_if_no_permissions(tmp_path, write_mode):
+    archive_path = tmp_path / "archive.tar"
+    archive_path.touch()
+    archive_path.chmod(0o000)
+
+    with pytest.raises(
+        PermissionError,
+        match="Permission denied",
+    ):
+        ArchiveWriter.open(archive_path, write_mode)
+
+
 def test_opening_and_closing_creates_empty_archive(archive_path, write_mode, read_mode):
     archive = ArchiveWriter.open(archive_path, write_mode)
     archive.close()

@@ -31,6 +31,9 @@ class ArchiveWriter:
 
         Raises:
             ValueError: If an unsupported mode is provided
+            FileNotFoundError: If the path is invalid
+            IsADirectoryError: If the path is a directory, not an archive file
+            PermissionError: If there are insufficient permissions to create the file
         """
 
     def add(
@@ -90,6 +93,8 @@ class ArchiveReader:
         Raises:
             ValueError: If an unsupported mode is provided
             IOError: If the file cannot be opened
+            FileNotFoundError: If the path is invalid
+            PermissionError: If there are insufficient permissions to open the file
         """
 
     def extract(self, to: Union[str, Path, PathLike[str]]) -> None:

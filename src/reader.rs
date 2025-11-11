@@ -3,7 +3,7 @@ use flate2::read::GzDecoder;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyType};
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::io::Read;
 use std::path::PathBuf;
 use tar::Archive;
@@ -59,6 +59,7 @@ impl ArchiveReader {
             .as_mut()
             .ok_or_else(|| ArchiveClosedError::new_err("archive is already closed"))?;
 
+        // TODO: wrap this error to make it easier to catch
         archive.unpack(to)?;
         Ok(())
     }

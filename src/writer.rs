@@ -79,6 +79,7 @@ impl ArchiveWriter {
 
         let name = arcname.unwrap_or(default_name);
 
+        // TODO: wrap these errors to make them easier to catch
         if path.is_dir() {
             if recursive {
                 builder.append_dir_all(&name, &path)?;
@@ -98,6 +99,7 @@ impl ArchiveWriter {
 
     fn close(&mut self) -> PyResult<()> {
         if let Some(builder) = self.builder.take() {
+            // TODO: wrap these errors to make them easier to catch
             let mut writer = builder.into_inner()?;
             writer.flush()?;
         }

@@ -28,3 +28,4 @@ jobs:
           uv run ruff check tests
           uv run ruff format --diff tests
           uv run mypy tests
+          cargo fmt --check

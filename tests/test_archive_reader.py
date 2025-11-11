@@ -1,4 +1,4 @@
-from fastar import ArchiveClosedError, ArchiveReader, UnsupportedModeError
+from fastar import ArchiveClosedError, ArchiveReader
 from random import randint
 import os
 import sys
@@ -10,7 +10,7 @@ import psutil
 
 def test_open_raises_on_unsupported_mode(archive_path):
     with pytest.raises(
-        UnsupportedModeError,
+        ValueError,
         match="unsupported mode; only 'r' and 'r:gz' are supported",
     ):
         ArchiveReader.open(archive_path, "invalid-mode")  # type: ignore[arg-type]

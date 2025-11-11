@@ -2,10 +2,11 @@ mod errors;
 mod reader;
 mod writer;
 
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use std::path::PathBuf;
 
-use errors::{ArchiveClosedError, FastarError, NameDerivationError, UnsupportedModeError};
+use errors::{ArchiveClosedError, FastarError, NameDerivationError};
 use reader::ArchiveReader;
 use writer::ArchiveWriter;
 
@@ -21,7 +22,7 @@ fn open(py: Python<'_>, path: PathBuf, mode: &str) -> PyResult<PyObject> {
             let reader = ArchiveReader::open(&py.get_type::<ArchiveReader>(), py, path, mode)?;
             Ok(reader.into())
         }
-        _ => Err(UnsupportedModeError::new_err(
+        _ => Err(PyValueError::new_err(
             "unsupported mode; supported modes are 'w', 'w:gz', 'r', 'r:gz'",
         )),
     }
@@ -33,7 +34,6 @@ fn fastar(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<ArchiveReader>()?;
     m.add_function(wrap_pyfunction!(open, m)?)?;
     m.add("FastarError", m.py().get_type::<FastarError>())?;
-    m.add("UnsupportedModeError", m.py().get_type::<UnsupportedModeError>())?;
     m.add("ArchiveClosedError", m.py().get_type::<ArchiveClosedError>())?;
     m.add("NameDerivationError", m.py().get_type::<NameDerivationError>())?;
     Ok(())

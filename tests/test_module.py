@@ -5,7 +5,7 @@ import tarfile
 
 def test_open_raises_on_unsupported_mode(archive_path):
     with pytest.raises(
-        fastar.UnsupportedModeError,
+        ValueError,
         match="unsupported mode; supported modes are 'w', 'w:gz', 'r', 'r:gz'",
     ):
         fastar.open(archive_path, "invalid-mode")  # type: ignore[call-overload]

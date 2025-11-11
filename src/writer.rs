@@ -1,7 +1,7 @@
-use crate::errors::{ArchiveClosedError, NameDerivationError, UnsupportedModeError};
+use crate::errors::{ArchiveClosedError, NameDerivationError};
 use flate2::write::GzEncoder;
 use flate2::Compression;
-use pyo3::exceptions::PyRuntimeError;
+use pyo3::exceptions::{PyRuntimeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyType};
 use std::fs::File;
@@ -47,7 +47,7 @@ impl ArchiveWriter {
                     },
                 )
             }
-            _ => Err(UnsupportedModeError::new_err(
+            _ => Err(PyValueError::new_err(
                 "unsupported mode; only 'w' and 'w:gz' are supported",
             )),
         }

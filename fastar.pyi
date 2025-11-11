@@ -6,9 +6,6 @@ from os import PathLike
 class FastarError(Exception):
     """Base exception for all fastar errors."""
 
-class UnsupportedModeError(FastarError):
-    """Exception raised when an unsupported file mode is used."""
-
 class ArchiveClosedError(FastarError):
     """Exception raised when attempting to use a closed archive."""
 
@@ -33,7 +30,7 @@ class ArchiveWriter:
             An ArchiveWriter instance
 
         Raises:
-            UnsupportedModeError: If an unsupported mode is provided
+            ValueError: If an unsupported mode is provided
         """
 
     def add(
@@ -90,7 +87,7 @@ class ArchiveReader:
             An ArchiveReader instance
 
         Raises:
-            UnsupportedModeError: If an unsupported mode is provided
+            ValueError: If an unsupported mode is provided
             IOError: If the file cannot be opened
         """
 
@@ -130,7 +127,7 @@ def open(
         An ArchiveWriter instance
 
     Raises:
-        UnsupportedModeError: If an unsupported mode is provided
+        ValueError: If an unsupported mode is provided
         IOError: If the file cannot be opened
     """
 
@@ -147,4 +144,8 @@ def open(
 
     Returns:
         An ArchiveReader instance
+
+    Raises:
+        ValueError: If an unsupported mode is provided
+        IOError: If the file cannot be opened
     """

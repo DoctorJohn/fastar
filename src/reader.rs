@@ -1,5 +1,6 @@
-use crate::errors::{ArchiveClosedError, UnsupportedModeError};
+use crate::errors::ArchiveClosedError;
 use flate2::read::GzDecoder;
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyType};
 use std::fs::File;
@@ -46,7 +47,7 @@ impl ArchiveReader {
                     },
                 )
             }
-            _ => Err(UnsupportedModeError::new_err(
+            _ => Err(PyValueError::new_err(
                 "unsupported mode; only 'r' and 'r:gz' are supported",
             )),
         }

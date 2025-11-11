@@ -1,5 +1,10 @@
 import tarfile
-from fastar import ArchiveClosedError, ArchiveWriter, UnsupportedModeError
+from fastar import (
+    ArchiveClosedError,
+    ArchiveWriter,
+    UnsupportedModeError,
+    NameDerivationError,
+)
 import pytest
 import psutil
 
@@ -69,7 +74,7 @@ def test_add_raises_if_file_name_cannot_be_determined(
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        with pytest.raises(RuntimeError, match="cannot derive name from path"):
+        with pytest.raises(NameDerivationError, match="cannot derive name from path"):
             archive.add(file_path / "..")
 
 

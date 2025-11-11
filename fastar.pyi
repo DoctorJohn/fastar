@@ -12,6 +12,9 @@ class UnsupportedModeError(FastarError):
 class ArchiveClosedError(FastarError):
     """Exception raised when attempting to use a closed archive."""
 
+class NameDerivationError(FastarError):
+    """Exception raised when a file name cannot be derived from a path."""
+
 class ArchiveWriter:
     """A tar archive writer that supports compressed and uncompressed formats."""
 
@@ -51,7 +54,8 @@ class ArchiveWriter:
 
         Raises:
             ArchiveClosedError: If the archive is already closed
-            RuntimeError: If the path doesn't exist or cannot derive name from path
+            NameDerivationError: If arcname is not provided and name cannot be derived from path
+            RuntimeError: If the path doesn't exist
         """
 
     def close(self) -> None:

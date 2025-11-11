@@ -1,4 +1,4 @@
-use crate::errors::{ArchiveClosedError, UnsupportedModeError};
+use crate::errors::{ArchiveClosedError, NameDerivationError, UnsupportedModeError};
 use flate2::write::GzEncoder;
 use flate2::Compression;
 use pyo3::exceptions::PyRuntimeError;
@@ -71,7 +71,7 @@ impl ArchiveWriter {
         let default_name = || -> PyResult<String> {
             let name = Path::new(&path)
                 .file_name()
-                .ok_or_else(|| PyRuntimeError::new_err("cannot derive name from path"))?
+                .ok_or_else(|| NameDerivationError::new_err("cannot derive name from path"))?
                 .to_string_lossy()
                 .into_owned();
             Ok(name)

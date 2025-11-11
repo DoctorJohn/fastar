@@ -1,6 +1,5 @@
-use crate::errors::UnsupportedModeError;
+use crate::errors::{ArchiveClosedError, UnsupportedModeError};
 use flate2::read::GzDecoder;
-use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyType};
 use std::fs::File;
@@ -57,7 +56,7 @@ impl ArchiveReader {
         let archive = self
             .archive
             .as_mut()
-            .ok_or_else(|| PyRuntimeError::new_err("archive is already closed"))?;
+            .ok_or_else(|| ArchiveClosedError::new_err("archive is already closed"))?;
 
         archive.unpack(to)?;
         Ok(())

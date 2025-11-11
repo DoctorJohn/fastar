@@ -1,4 +1,4 @@
-from fastar import ArchiveReader, UnsupportedModeError
+from fastar import ArchiveClosedError, ArchiveReader, UnsupportedModeError
 from random import randint
 import os
 import sys
@@ -57,7 +57,7 @@ def test_extract_raises_if_archive_is_already_closed(
     reader = ArchiveReader.open(archive_path, read_mode)
     reader.close()
 
-    with pytest.raises(RuntimeError, match="archive is already closed"):
+    with pytest.raises(ArchiveClosedError, match="archive is already closed"):
         reader.extract("some/path")
 
 

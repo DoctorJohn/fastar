@@ -5,7 +5,7 @@ mod writer;
 use pyo3::prelude::*;
 use std::path::PathBuf;
 
-use errors::{FastarError, UnsupportedModeError};
+use errors::{ArchiveClosedError, FastarError, UnsupportedModeError};
 use reader::ArchiveReader;
 use writer::ArchiveWriter;
 
@@ -34,5 +34,6 @@ fn fastar(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(open, m)?)?;
     m.add("FastarError", m.py().get_type::<FastarError>())?;
     m.add("UnsupportedModeError", m.py().get_type::<UnsupportedModeError>())?;
+    m.add("ArchiveClosedError", m.py().get_type::<ArchiveClosedError>())?;
     Ok(())
 }

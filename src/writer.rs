@@ -1,4 +1,4 @@
-use crate::errors::UnsupportedModeError;
+use crate::errors::{ArchiveClosedError, UnsupportedModeError};
 use flate2::write::GzEncoder;
 use flate2::Compression;
 use pyo3::exceptions::PyRuntimeError;
@@ -64,7 +64,7 @@ impl ArchiveWriter {
         let builder = self
             .builder
             .as_mut()
-            .ok_or_else(|| PyRuntimeError::new_err("archive is already closed"))?;
+            .ok_or_else(|| ArchiveClosedError::new_err("archive is already closed"))?;
 
         builder.follow_symlinks(dereference);
 

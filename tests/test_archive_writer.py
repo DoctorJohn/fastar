@@ -1,5 +1,5 @@
 import tarfile
-from fastar import ArchiveWriter, UnsupportedModeError
+from fastar import ArchiveClosedError, ArchiveWriter, UnsupportedModeError
 import pytest
 import psutil
 
@@ -58,7 +58,7 @@ def test_add_raises_if_archive_is_already_closed(tmp_path, archive_path, write_m
     archive = ArchiveWriter.open(archive_path, write_mode)
     archive.close()
 
-    with pytest.raises(RuntimeError, match="archive is already closed"):
+    with pytest.raises(ArchiveClosedError, match="archive is already closed"):
         archive.add(file_path)
 
 

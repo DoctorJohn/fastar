@@ -9,6 +9,9 @@ class FastarError(Exception):
 class UnsupportedModeError(FastarError):
     """Exception raised when an unsupported file mode is used."""
 
+class ArchiveClosedError(FastarError):
+    """Exception raised when attempting to use a closed archive."""
+
 class ArchiveWriter:
     """A tar archive writer that supports compressed and uncompressed formats."""
 
@@ -47,7 +50,8 @@ class ArchiveWriter:
             dereference: If True, add the target of symlinks instead of the symlink itself
 
         Raises:
-            RuntimeError: If the archive is closed or the path doesn't exist
+            ArchiveClosedError: If the archive is already closed
+            RuntimeError: If the path doesn't exist or cannot derive name from path
         """
 
     def close(self) -> None:
@@ -94,7 +98,7 @@ class ArchiveReader:
             to: Destination directory path
 
         Raises:
-            RuntimeError: If the archive is closed
+            ArchiveClosedError: If the archive is already closed
             IOError: If extraction fails
         """
 

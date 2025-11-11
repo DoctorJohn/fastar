@@ -53,6 +53,7 @@ class ArchiveWriter:
             ArchiveClosedError: If the archive is already closed
             NameDerivationError: If arcname is not provided and name cannot be derived from path
             FileNotFoundError: If the path doesn't exist or when dereferencing a dangling symlink
+            OSError: If the arcname is absolute or contains parent directory references
         """
 
     def close(self) -> None:

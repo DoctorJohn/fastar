@@ -896,7 +896,16 @@ def test_arcnames_must_be_relative(tmp_path, archive_path, write_mode):
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        with pytest.raises(
-            OSError, match="paths in archives must be relative when setting path for"
-        ):
+        with pytest.raises(OSError, match="paths in archives must be relative"):
             archive.add(file_path, arcname="/absolute/path/file.txt")
+
+
+def test_arcnames_must_not_contain_parent_references(
+    tmp_path, archive_path, write_mode
+):
+    file_path = tmp_path / "file.txt"
+    file_path.touch()
+
+    with ArchiveWriter.open(archive_path, write_mode) as archive:
+        with pytest.raises(OSError, match="paths in archives must not have `..`"):
+            archive.add(file_path, arcname="../../file.txt")

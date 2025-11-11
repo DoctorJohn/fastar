@@ -1,7 +1,7 @@
 use crate::errors::{ArchiveClosedError, NameDerivationError};
 use flate2::write::GzEncoder;
 use flate2::Compression;
-use pyo3::exceptions::{PyRuntimeError, PyValueError};
+use pyo3::exceptions::{PyFileNotFoundError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyType};
 use std::fs::File;
@@ -88,7 +88,10 @@ impl ArchiveWriter {
         } else if path.is_file() {
             builder.append_path_with_name(&path, &name)?;
         } else {
-            return Err(PyRuntimeError::new_err("path does not exist"));
+            return Err(PyFileNotFoundError::new_err(format!(
+                "path does not exist: {}",
+                path.display()
+            )));
         }
         Ok(())
     }

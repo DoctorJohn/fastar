@@ -81,7 +81,7 @@ def test_add_raises_if_path_does_not_exist(tmp_path, archive_path, write_mode):
     non_existing_path = tmp_path / "non_existing.txt"
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        with pytest.raises(RuntimeError, match="path does not exist"):
+        with pytest.raises(FileNotFoundError, match="path does not exist"):
             archive.add(non_existing_path)
 
 
@@ -824,7 +824,7 @@ def test_add_raises_if_dereferencing_symlink_to_non_existing_path(
     symlink_path.symlink_to("non_existing_target.txt")
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        with pytest.raises(RuntimeError, match="path does not exist"):
+        with pytest.raises(FileNotFoundError, match="path does not exist"):
             archive.add(symlink_path, dereference=True)
 
 

@@ -52,7 +52,7 @@ class ArchiveWriter:
         Raises:
             ArchiveClosedError: If the archive is already closed
             NameDerivationError: If arcname is not provided and name cannot be derived from path
-            FileNotFoundError: If the path doesn't exist
+            FileNotFoundError: If the path doesn't exist or when dereferencing a dangling symlink
         """
 
     def close(self) -> None:
@@ -101,6 +101,8 @@ class ArchiveReader:
         Raises:
             ArchiveClosedError: If the archive is already closed
             IOError: If extraction fails
+            IsADirectoryError: If the extracted file would overwrite a directory
+            FileExistsError: If the extracted directory would overwrite an existing file
         """
 
     def close(self) -> None:

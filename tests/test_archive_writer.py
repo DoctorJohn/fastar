@@ -1,9 +1,5 @@
 import tarfile
-from fastar import (
-    ArchiveClosedError,
-    ArchiveWriter,
-    NameDerivationError,
-)
+from fastar import ArchiveClosedError, ArchiveWriter, NameDerivationError
 import pytest
 import psutil
 

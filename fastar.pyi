@@ -37,9 +37,7 @@ class ArchiveWriter:
 
         Raises:
             ValueError: If an unsupported mode is provided
-            FileNotFoundError: If the path is invalid
-            IsADirectoryError: If the path is a directory, not an archive file
-            PermissionError: If there are insufficient permissions to create the file
+            IOError: If the file cannot be opened
         """
 
     def add(
@@ -60,9 +58,8 @@ class ArchiveWriter:
 
         Raises:
             ArchiveClosedError: If the archive is already closed
-            NameDerivationError: If arcname is not provided and name cannot be derived from path
-            ArchiveAppendingError: If the arcname is absolute or contains parent directory references
-            FileNotFoundError: If the path doesn't exist or when dereferencing a dangling symlink
+            ArchiveAppendingError: If the target cannot be added to the archive
+            IOError: If there's an error reading the target file or directory
         """
 
     def close(self) -> None:
@@ -70,7 +67,7 @@ class ArchiveWriter:
         Close the archive and flush all pending writes.
 
         Raises:
-            RuntimeError: If there's an error flushing the writer
+            IOError: If there's an error flushing the archive
         """
 
     def __enter__(self) -> Self:
@@ -99,8 +96,6 @@ class ArchiveReader:
         Raises:
             ValueError: If an unsupported mode is provided
             IOError: If the file cannot be opened
-            FileNotFoundError: If the path is invalid
-            PermissionError: If there are insufficient permissions to open the file
         """
 
     def extract(self, to: Union[str, Path, PathLike[str]]) -> None:
@@ -112,10 +107,8 @@ class ArchiveReader:
 
         Raises:
             ArchiveClosedError: If the archive is already closed
-            IOError: If extraction fails
-            IsADirectoryError: If the extracted file would overwrite a directory
-            FileExistsError: If the extracted directory would overwrite an existing file
-            ArchiveUnpackingError: If the archive cannot be unpacked, likely due to invalid headers
+            ArchiveUnpackingError: If the archive cannot be unpacked
+            IOError: If extraction fails due to I/O errors
         """
 
     def close(self) -> None:

@@ -2,20 +2,20 @@
 
 [![Versions][versions-image]][versions-url]
 [![PyPI][pypi-image]][pypi-url]
-[![CodSpeed][codspeed-image]][codspeed-url]
 [![Downloads][downloads-image]][downloads-url]
 [![License][license-image]][license-url]
+[![CodSpeed][codspeed-image]][codspeed-url]
 
 [versions-image]: https://img.shields.io/pypi/pyversions/fastar
 [versions-url]: https://github.com/DoctorJohn/fastar/blob/main/pyproject.toml
 [pypi-image]: https://img.shields.io/pypi/v/fastar
 [pypi-url]: https://pypi.org/project/fastar/
-[codspeed-image]: https://img.shields.io/endpoint?url=https://codspeed.io/badge.json
-[codspeed-url]: https://codspeed.io/DoctorJohn/fastar
 [downloads-image]: https://img.shields.io/pypi/dm/fastar
 [downloads-url]: https://pypi.org/project/fastar/
 [license-image]: https://img.shields.io/pypi/l/fastar
 [license-url]: https://github.com/DoctorJohn/fastar/blob/main/LICENSE
+[codspeed-image]: https://img.shields.io/endpoint?url=https://codspeed.io/badge.json
+[codspeed-url]: https://codspeed.io/DoctorJohn/fastar
 
 High-level bindings for the Rust [tar](https://crates.io/crates/tar) crate.
 

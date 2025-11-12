@@ -61,6 +61,22 @@ def test_context_manager_created_empty_archive(archive_path, write_mode, read_mo
         assert archive.getnames() == []
 
 
+def test_open_overwrites_existing_archive_by_default(
+    tmp_path, archive_path, write_mode, read_mode
+):
+    file_path = tmp_path / "file.txt"
+    file_path.touch()
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(file_path, arcname="file1.txt")
+
+    with ArchiveWriter.open(archive_path, write_mode) as archive:
+        pass
+
+    with tarfile.open(archive_path, read_mode) as archive:
+        assert archive.getnames() == []
+
+
 def test_close_closes_archive(archive_path, write_mode):
     archive = ArchiveWriter.open(archive_path, write_mode)
 

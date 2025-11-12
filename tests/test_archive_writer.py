@@ -1,5 +1,5 @@
 import tarfile
-from fastar import ArchiveClosedError, ArchiveWriter, NameDerivationError
+from fastar import ArchiveAppendingError, ArchiveClosedError, ArchiveWriter, NameDerivationError
 import pytest
 import psutil
 
@@ -77,6 +77,20 @@ def test_context_manager_closes_archive(archive_path, write_mode):
         assert open_files[0].path == str(archive_path)
 
     assert process.open_files() == []
+
+
+def test_close_gracefully_handles_multiple_calls(archive_path, write_mode):
+    archive = ArchiveWriter.open(archive_path, write_mode)
+    archive.close()
+    archive.close()
+    archive.close()
+
+
+def test_close_gracefully_handles_unlinked_archives(archive_path, write_mode):
+    archive = ArchiveWriter.open(archive_path, write_mode)
+    assert archive_path.exists()
+    archive_path.unlink()
+    archive.close()
 
 
 def test_add_raises_if_archive_is_already_closed(tmp_path, archive_path, write_mode):
@@ -924,7 +938,7 @@ def test_arcnames_must_be_relative(tmp_path, archive_path, write_mode):
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        with pytest.raises(OSError, match="paths in archives must be relative"):
+        with pytest.raises(ArchiveAppendingError, match="paths in archives must be relative"):
             archive.add(file_path, arcname="/absolute/path/file.txt")
 
 
@@ -935,5 +949,5 @@ def test_arcnames_must_not_contain_parent_references(
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        with pytest.raises(OSError, match="paths in archives must not have `..`"):
+        with pytest.raises(ArchiveAppendingError, match="paths in archives must not have `..`"):
             archive.add(file_path, arcname="../../file.txt")

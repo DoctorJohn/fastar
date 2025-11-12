@@ -6,6 +6,7 @@ use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use std::path::PathBuf;
 
+use errors::*;
 use reader::ArchiveReader;
 use writer::ArchiveWriter;
 
@@ -35,19 +36,19 @@ fn fastar(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("FastarError", m.py().get_type::<errors::FastarError>())?;
     m.add(
         "ArchiveClosedError",
-        m.py().get_type::<errors::ArchiveClosedError>(),
+        m.py().get_type::<ArchiveClosedError>(),
     )?;
     m.add(
         "NameDerivationError",
-        m.py().get_type::<errors::NameDerivationError>(),
+        m.py().get_type::<NameDerivationError>(),
     )?;
     m.add(
         "ArchiveAppendingError",
-        m.py().get_type::<errors::ArchiveAppendingError>(),
+        m.py().get_type::<ArchiveAppendingError>(),
     )?;
     m.add(
         "ArchiveUnpackingError",
-        m.py().get_type::<errors::ArchiveUnpackingError>(),
+        m.py().get_type::<ArchiveUnpackingError>(),
     )?;
     Ok(())
 }

@@ -9,7 +9,13 @@ class FastarError(Exception):
 class ArchiveClosedError(FastarError):
     """Exception raised when attempting to use a closed archive."""
 
-class NameDerivationError(FastarError):
+class ArchiveUnpackingError(FastarError):
+    """Exception raised when unpacking an archive fails."""
+
+class ArchiveAppendingError(FastarError):
+    """Exception raised when appending to an archive fails."""
+
+class NameDerivationError(ArchiveAppendingError):
     """Exception raised when a file name cannot be derived from a path."""
 
 class ArchiveWriter:
@@ -55,8 +61,8 @@ class ArchiveWriter:
         Raises:
             ArchiveClosedError: If the archive is already closed
             NameDerivationError: If arcname is not provided and name cannot be derived from path
+            ArchiveAppendingError: If the arcname is absolute or contains parent directory references
             FileNotFoundError: If the path doesn't exist or when dereferencing a dangling symlink
-            OSError: If the arcname is absolute or contains parent directory references
         """
 
     def close(self) -> None:
@@ -109,6 +115,7 @@ class ArchiveReader:
             IOError: If extraction fails
             IsADirectoryError: If the extracted file would overwrite a directory
             FileExistsError: If the extracted directory would overwrite an existing file
+            ArchiveUnpackingError: If the archive cannot be unpacked, likely due to invalid headers
         """
 
     def close(self) -> None:

@@ -1,11 +1,11 @@
-use crate::errors::{ArchiveClosedError, NameDerivationError};
+use crate::errors::*;
 use flate2::write::GzEncoder;
 use flate2::Compression;
 use pyo3::exceptions::{PyFileNotFoundError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyType};
 use std::fs::File;
-use std::io::Write;
+use std::io::{ErrorKind, Write};
 use std::path::{Path, PathBuf};
 
 #[pyclass]
@@ -79,27 +79,31 @@ impl ArchiveWriter {
 
         let name = arcname.unwrap_or(default_name);
 
-        // TODO: wrap these errors to make them easier to catch
         if path.is_dir() {
             if recursive {
-                builder.append_dir_all(&name, &path)?;
+                builder.append_dir_all(&name, &path)
             } else {
-                builder.append_dir(&name, &path)?;
+                builder.append_dir(&name, &path)
             }
         } else if path.is_file() {
-            builder.append_path_with_name(&path, &name)?;
+            builder.append_path_with_name(&path, &name)
         } else {
             return Err(PyFileNotFoundError::new_err(format!(
                 "path does not exist: {}",
                 path.display()
             )));
         }
-        Ok(())
+        .map_err(|e: std::io::Error| {
+            if e.kind() == ErrorKind::Other {
+                ArchiveAppendingError::new_err(e.to_string())
+            } else {
+                e.into()
+            }
+        })
     }
 
     fn close(&mut self) -> PyResult<()> {
         if let Some(builder) = self.builder.take() {
-            // TODO: wrap these errors to make them easier to catch
             let mut writer = builder.into_inner()?;
             writer.flush()?;
         }

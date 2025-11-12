@@ -40,7 +40,7 @@ class ArchiveWriter:
             IOError: If the file cannot be opened
         """
 
-    def add(
+    def append(
         self,
         path: Union[str, Path, PathLike[str]],
         arcname: Optional[str] = None,
@@ -48,17 +48,17 @@ class ArchiveWriter:
         dereference: bool = False,
     ) -> None:
         """
-        Add a file or directory to the archive.
+        Append a file or directory to the archive.
 
         Args:
-            path: Path to the file or directory to add
+            path: Path to the file or directory to append
             arcname: Name to use in the archive (defaults to the filename)
-            recursive: If True and path is a directory, add all contents recursively
-            dereference: If True, add the target of symlinks instead of the symlink itself
+            recursive: If True and path is a directory, append all contents recursively
+            dereference: If True, append the target of symlinks instead of the symlink itself
 
         Raises:
             ArchiveClosedError: If the archive is already closed
-            ArchiveAppendingError: If the target cannot be added to the archive
+            ArchiveAppendingError: If the target cannot be appended to the archive
             IOError: If there's an error reading the target file or directory
         """
 
@@ -98,9 +98,9 @@ class ArchiveReader:
             IOError: If the file cannot be opened
         """
 
-    def extract(self, to: Union[str, Path, PathLike[str]]) -> None:
+    def unpack(self, to: Union[str, Path, PathLike[str]]) -> None:
         """
-        Extract all contents of the archive to the specified directory.
+        Unpack all contents of the archive and put them into the specified directory.
 
         Args:
             to: Destination directory path
@@ -108,7 +108,7 @@ class ArchiveReader:
         Raises:
             ArchiveClosedError: If the archive is already closed
             ArchiveUnpackingError: If the archive cannot be unpacked
-            IOError: If extraction fails due to I/O errors
+            IOError: If unpacking fails due to I/O errors
         """
 
     def close(self) -> None:

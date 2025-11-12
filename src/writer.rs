@@ -54,7 +54,7 @@ impl ArchiveWriter {
     }
 
     #[pyo3(signature = (path, arcname=None, recursive=true, dereference=false))]
-    fn add(
+    fn append(
         &mut self,
         path: PathBuf,
         arcname: Option<String>,

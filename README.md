@@ -34,11 +34,11 @@ some_file.write_text('Hello, Fastar!')
 
 
 with fastar.open('archive.tar', 'w') as archive:
-    archive.add(some_file)
+    archive.append(some_file)
 
 
 with fastar.open('archive.tar', 'r') as archive:
-    archive.extract(Path("extracted/"))
+    archive.unpack(Path("extracted/"))
 
 
 extracted_file = Path('extracted/file.txt')

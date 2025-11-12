@@ -53,7 +53,7 @@ impl ArchiveReader {
         }
     }
 
-    fn extract(&mut self, to: PathBuf) -> PyResult<()> {
+    fn unpack(&mut self, to: PathBuf) -> PyResult<()> {
         let archive = self
             .archive
             .as_mut()

@@ -98,7 +98,7 @@ def test_close_gracefully_handles_unlinked_archives(archive_path, write_mode):
     archive.close()
 
 
-def test_add_raises_if_archive_is_already_closed(tmp_path, archive_path, write_mode):
+def test_append_raises_if_archive_is_already_closed(tmp_path, archive_path, write_mode):
     file_path = tmp_path / "file.txt"
     file_path.touch()
 
@@ -106,10 +106,10 @@ def test_add_raises_if_archive_is_already_closed(tmp_path, archive_path, write_m
     archive.close()
 
     with pytest.raises(ArchiveClosedError, match="archive is already closed"):
-        archive.add(file_path)
+        archive.append(file_path)
 
 
-def test_add_raises_if_file_name_cannot_be_determined(
+def test_append_raises_if_file_name_cannot_be_determined(
     tmp_path, archive_path, write_mode
 ):
     file_path = tmp_path / "file.txt"
@@ -117,30 +117,32 @@ def test_add_raises_if_file_name_cannot_be_determined(
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
         with pytest.raises(NameDerivationError, match="cannot derive name from path"):
-            archive.add(file_path / "..")
+            archive.append(file_path / "..")
 
 
-def test_add_raises_if_path_does_not_exist(tmp_path, archive_path, write_mode):
+def test_append_raises_if_path_does_not_exist(tmp_path, archive_path, write_mode):
     non_existing_path = tmp_path / "non_existing.txt"
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
         with pytest.raises(FileNotFoundError, match="path does not exist"):
-            archive.add(non_existing_path)
+            archive.append(non_existing_path)
 
 
-def test_adding_a_single_file(tmp_path, archive_path, write_mode, read_mode):
+def test_append_can_append_a_single_file(tmp_path, archive_path, write_mode, read_mode):
     file_path = tmp_path / "file.txt"
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(file_path)
+        archive.append(file_path)
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["file.txt"]
         assert archive.getmember("file.txt").isfile()
 
 
-def test_adding_multiple_files(tmp_path, archive_path, write_mode, read_mode):
+def test_append_can_append_multiple_files(
+    tmp_path, archive_path, write_mode, read_mode
+):
     file_path1 = tmp_path / "file1.txt"
     file_path1.touch()
 
@@ -148,8 +150,8 @@ def test_adding_multiple_files(tmp_path, archive_path, write_mode, read_mode):
     file_path2.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(file_path1)
-        archive.add(file_path2)
+        archive.append(file_path1)
+        archive.append(file_path2)
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["file1.txt", "file2.txt"]
@@ -157,19 +159,23 @@ def test_adding_multiple_files(tmp_path, archive_path, write_mode, read_mode):
         assert archive.getmember("file2.txt").isfile()
 
 
-def test_adding_a_single_director(tmp_path, archive_path, write_mode, read_mode):
+def test_append_can_append_a_single_directory(
+    tmp_path, archive_path, write_mode, read_mode
+):
     dir_path = tmp_path / "dir"
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path)
+        archive.append(dir_path)
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["dir"]
         assert archive.getmember("dir").isdir()
 
 
-def test_adding_multiple_directorie(tmp_path, archive_path, write_mode, read_mode):
+def test_append_can_append_multiple_directories(
+    tmp_path, archive_path, write_mode, read_mode
+):
     dir_path1 = tmp_path / "dir1"
     dir_path1.mkdir()
 
@@ -177,8 +183,8 @@ def test_adding_multiple_directorie(tmp_path, archive_path, write_mode, read_mod
     dir_path2.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path1)
-        archive.add(dir_path2)
+        archive.append(dir_path1)
+        archive.append(dir_path2)
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["dir1", "dir2"]
@@ -186,25 +192,29 @@ def test_adding_multiple_directorie(tmp_path, archive_path, write_mode, read_mod
         assert archive.getmember("dir2").isdir()
 
 
-def test_adding_a_single_nested_file(tmp_path, archive_path, write_mode, read_mode):
+def test_append_can_append_a_single_nested_file(
+    tmp_path, archive_path, write_mode, read_mode
+):
     file_path = tmp_path / "file.txt"
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(file_path, arcname="nested/file.txt")
+        archive.append(file_path, arcname="nested/file.txt")
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["nested/file.txt"]
         assert archive.getmember("nested/file.txt").isfile()
 
 
-def test_adding_multiple_nested_files(tmp_path, archive_path, write_mode, read_mode):
+def test_append_can_append_multiple_nested_files(
+    tmp_path, archive_path, write_mode, read_mode
+):
     file_path = tmp_path / "file.txt"
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(file_path, arcname="nested/file1.txt")
-        archive.add(file_path, arcname="nested/file2.txt")
+        archive.append(file_path, arcname="nested/file1.txt")
+        archive.append(file_path, arcname="nested/file2.txt")
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["nested/file1.txt", "nested/file2.txt"]
@@ -212,29 +222,29 @@ def test_adding_multiple_nested_files(tmp_path, archive_path, write_mode, read_m
         assert archive.getmember("nested/file2.txt").isfile()
 
 
-def test_adding_a_single_nested_directory(
+def test_append_can_append_a_single_nested_directory(
     tmp_path, archive_path, write_mode, read_mode
 ):
     dir_path = tmp_path / "dir"
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path, arcname="nested/dir")
+        archive.append(dir_path, arcname="nested/dir")
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["nested/dir"]
         assert archive.getmember("nested/dir").isdir()
 
 
-def test_adding_multiple_nested_directories(
+def test_append_can_append_multiple_nested_directories(
     tmp_path, archive_path, write_mode, read_mode
 ):
     dir_path = tmp_path / "dir"
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path, arcname="nested/dir1")
-        archive.add(dir_path, arcname="nested/dir2")
+        archive.append(dir_path, arcname="nested/dir1")
+        archive.append(dir_path, arcname="nested/dir2")
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["nested/dir1", "nested/dir2"]
@@ -242,29 +252,29 @@ def test_adding_multiple_nested_directories(
         assert archive.getmember("nested/dir2").isdir()
 
 
-def test_adding_a_single_deeply_nested_file(
+def test_append_can_append_a_single_deeply_nested_file(
     tmp_path, archive_path, write_mode, read_mode
 ):
     file_path = tmp_path / "file.txt"
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(file_path, arcname="super/duper/deeply/nested/file.txt")
+        archive.append(file_path, arcname="super/duper/deeply/nested/file.txt")
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["super/duper/deeply/nested/file.txt"]
         assert archive.getmember("super/duper/deeply/nested/file.txt").isfile()
 
 
-def test_adding_multiple_deeply_nested_files(
+def test_append_can_append_multiple_deeply_nested_files(
     tmp_path, archive_path, write_mode, read_mode
 ):
     file_path = tmp_path / "file.txt"
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(file_path, arcname="super/duper/deeply/nested/file1.txt")
-        archive.add(file_path, arcname="super/duper/deeply/nested/file2.txt")
+        archive.append(file_path, arcname="super/duper/deeply/nested/file1.txt")
+        archive.append(file_path, arcname="super/duper/deeply/nested/file2.txt")
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == [
@@ -275,29 +285,29 @@ def test_adding_multiple_deeply_nested_files(
         assert archive.getmember("super/duper/deeply/nested/file2.txt").isfile()
 
 
-def test_adding_a_single_deeply_nested_directory(
+def test_append_can_append_a_single_deeply_nested_directory(
     tmp_path, archive_path, write_mode, read_mode
 ):
     dir_path = tmp_path / "dir"
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path, arcname="super/duper/deeply/nested/dir")
+        archive.append(dir_path, arcname="super/duper/deeply/nested/dir")
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["super/duper/deeply/nested/dir"]
         assert archive.getmember("super/duper/deeply/nested/dir").isdir()
 
 
-def test_adding_multiple_deeply_nested_directories(
+def test_append_can_append_multiple_deeply_nested_directories(
     tmp_path, archive_path, write_mode, read_mode
 ):
     dir_path = tmp_path / "dir"
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path, arcname="super/duper/deeply/nested/dir1")
-        archive.add(dir_path, arcname="super/duper/deeply/nested/dir2")
+        archive.append(dir_path, arcname="super/duper/deeply/nested/dir1")
+        archive.append(dir_path, arcname="super/duper/deeply/nested/dir2")
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == [
@@ -308,7 +318,9 @@ def test_adding_multiple_deeply_nested_directories(
         assert archive.getmember("super/duper/deeply/nested/dir2").isdir()
 
 
-def test_adding_files_and_directories(tmp_path, archive_path, write_mode, read_mode):
+def test_append_can_append_files_and_directories(
+    tmp_path, archive_path, write_mode, read_mode
+):
     file_path = tmp_path / "file.txt"
     file_path.touch()
 
@@ -316,8 +328,8 @@ def test_adding_files_and_directories(tmp_path, archive_path, write_mode, read_m
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(file_path)
-        archive.add(dir_path)
+        archive.append(file_path)
+        archive.append(dir_path)
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["file.txt", "dir"]
@@ -325,7 +337,7 @@ def test_adding_files_and_directories(tmp_path, archive_path, write_mode, read_m
         assert archive.getmember("dir").isdir()
 
 
-def test_adding_nested_files_and_directories(
+def test_append_can_append_nested_files_and_directories(
     tmp_path, archive_path, write_mode, read_mode
 ):
     file_path = tmp_path / "file.txt"
@@ -335,8 +347,8 @@ def test_adding_nested_files_and_directories(
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(file_path, arcname="nested/file.txt")
-        archive.add(dir_path, arcname="nested/dir")
+        archive.append(file_path, arcname="nested/file.txt")
+        archive.append(dir_path, arcname="nested/dir")
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["nested/file.txt", "nested/dir"]
@@ -344,7 +356,7 @@ def test_adding_nested_files_and_directories(
         assert archive.getmember("nested/dir").isdir()
 
 
-def test_adding_deeply_nested_files_and_directories(
+def test_append_can_append_deeply_nested_files_and_directories(
     tmp_path, archive_path, write_mode, read_mode
 ):
     file_path = tmp_path / "file.txt"
@@ -354,8 +366,8 @@ def test_adding_deeply_nested_files_and_directories(
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(file_path, arcname="super/duper/deeply/nested/file.txt")
-        archive.add(dir_path, arcname="super/duper/deeply/nested/dir")
+        archive.append(file_path, arcname="super/duper/deeply/nested/file.txt")
+        archive.append(dir_path, arcname="super/duper/deeply/nested/dir")
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == [
@@ -366,14 +378,16 @@ def test_adding_deeply_nested_files_and_directories(
         assert archive.getmember("super/duper/deeply/nested/dir").isdir()
 
 
-def test_adding_multi_level_files(tmp_path, archive_path, write_mode, read_mode):
+def test_append_can_append_multi_level_files(
+    tmp_path, archive_path, write_mode, read_mode
+):
     file_path = tmp_path / "file.txt"
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(file_path)
-        archive.add(file_path, arcname="nested/file.txt")
-        archive.add(file_path, arcname="super/duper/deeply/nested/file.txt")
+        archive.append(file_path)
+        archive.append(file_path, arcname="nested/file.txt")
+        archive.append(file_path, arcname="super/duper/deeply/nested/file.txt")
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == [
@@ -386,14 +400,16 @@ def test_adding_multi_level_files(tmp_path, archive_path, write_mode, read_mode)
         assert archive.getmember("super/duper/deeply/nested/file.txt").isfile()
 
 
-def test_adding_multi_level_directories(tmp_path, archive_path, write_mode, read_mode):
+def test_append_can_append_multi_level_directories(
+    tmp_path, archive_path, write_mode, read_mode
+):
     dir_path = tmp_path / "dir"
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path)
-        archive.add(dir_path, arcname="nested/dir")
-        archive.add(dir_path, arcname="super/duper/deeply/nested/dir")
+        archive.append(dir_path)
+        archive.append(dir_path, arcname="nested/dir")
+        archive.append(dir_path, arcname="super/duper/deeply/nested/dir")
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == [
@@ -406,7 +422,7 @@ def test_adding_multi_level_directories(tmp_path, archive_path, write_mode, read
         assert archive.getmember("super/duper/deeply/nested/dir").isdir()
 
 
-def test_adding_multi_level_files_and_directories(
+def test_append_can_append_multi_level_files_and_directories(
     tmp_path, archive_path, write_mode, read_mode
 ):
     file_path = tmp_path / "file.txt"
@@ -416,13 +432,13 @@ def test_adding_multi_level_files_and_directories(
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(file_path)
-        archive.add(file_path, arcname="nested/file.txt")
-        archive.add(file_path, arcname="super/duper/deeply/nested/file.txt")
+        archive.append(file_path)
+        archive.append(file_path, arcname="nested/file.txt")
+        archive.append(file_path, arcname="super/duper/deeply/nested/file.txt")
 
-        archive.add(dir_path)
-        archive.add(dir_path, arcname="nested/dir")
-        archive.add(dir_path, arcname="super/duper/deeply/nested/dir")
+        archive.append(dir_path)
+        archive.append(dir_path, arcname="nested/dir")
+        archive.append(dir_path, arcname="super/duper/deeply/nested/dir")
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == [
@@ -443,7 +459,7 @@ def test_adding_multi_level_files_and_directories(
         assert archive.getmember("super/duper/deeply/nested/dir").isdir()
 
 
-def test_adding_directory_with_items_recursively(
+def test_append_appends_directories_with_items_recursively(
     tmp_path, archive_path, write_mode, read_mode
 ):
     dir_path = tmp_path / "parent"
@@ -456,7 +472,7 @@ def test_adding_directory_with_items_recursively(
     item_dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path, recursive=True)
+        archive.append(dir_path, recursive=True)
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert set(archive.getnames()) == {"parent", "parent/dir", "parent/file.txt"}
@@ -465,7 +481,7 @@ def test_adding_directory_with_items_recursively(
         assert archive.getmember("parent/file.txt").isfile()
 
 
-def test_adding_directory_with_nested_items_recursively(
+def test_append_appends_directories_with_nested_items_recursively(
     tmp_path, archive_path, write_mode, read_mode
 ):
     dir_path = tmp_path / "parent"
@@ -481,7 +497,7 @@ def test_adding_directory_with_nested_items_recursively(
     item_dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path, recursive=True)
+        archive.append(dir_path, recursive=True)
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert set(archive.getnames()) == {
@@ -496,7 +512,7 @@ def test_adding_directory_with_nested_items_recursively(
         assert archive.getmember("parent/nested/file.txt").isfile()
 
 
-def test_adding_directory_with_deeply_nested_items_recursively(
+def test_append_appends_directories_with_deeply_nested_items_recursively(
     tmp_path, archive_path, write_mode, read_mode
 ):
     dir_path = tmp_path / "parent"
@@ -512,7 +528,7 @@ def test_adding_directory_with_deeply_nested_items_recursively(
     item_dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path, recursive=True)
+        archive.append(dir_path, recursive=True)
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert set(archive.getnames()) == {
@@ -533,7 +549,7 @@ def test_adding_directory_with_deeply_nested_items_recursively(
         assert archive.getmember("parent/super/duper/deeply/nested/file.txt").isfile()
 
 
-def test_adding_multi_level_directories_with_items_recursively(
+def test_append_appends_multi_level_directories_with_items_recursively(
     tmp_path, archive_path, write_mode, read_mode
 ):
     dir_path = tmp_path / "parent"
@@ -555,7 +571,7 @@ def test_adding_multi_level_directories_with_items_recursively(
     item_dir_path2.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path, recursive=True)
+        archive.append(dir_path, recursive=True)
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert set(archive.getnames()) == {
@@ -574,7 +590,7 @@ def test_adding_multi_level_directories_with_items_recursively(
         assert archive.getmember("parent/nested/file2.txt").isfile()
 
 
-def test_adding_directory_with_items_non_recursively(
+def test_append_can_append_directories_with_items_non_recursively(
     tmp_path, archive_path, write_mode, read_mode
 ):
     dir_path = tmp_path / "parent"
@@ -587,9 +603,9 @@ def test_adding_directory_with_items_non_recursively(
     item_dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path, recursive=False)
-        archive.add(item_file_path, arcname="parent/file.txt")
-        archive.add(item_dir_path, arcname="parent/dir")
+        archive.append(dir_path, recursive=False)
+        archive.append(item_file_path, arcname="parent/file.txt")
+        archive.append(item_dir_path, arcname="parent/dir")
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["parent", "parent/file.txt", "parent/dir"]
@@ -598,7 +614,7 @@ def test_adding_directory_with_items_non_recursively(
         assert archive.getmember("parent/dir").isdir()
 
 
-def test_adding_directory_with_nested_items_non_recursively(
+def test_append_can_append_directories_with_nested_items_non_recursively(
     tmp_path, archive_path, write_mode, read_mode
 ):
     dir_path = tmp_path / "parent"
@@ -614,10 +630,10 @@ def test_adding_directory_with_nested_items_non_recursively(
     item_dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path, recursive=False)
-        archive.add(nested_dir_path, recursive=False, arcname="parent/nested")
-        archive.add(item_file_path, arcname="parent/nested/file.txt")
-        archive.add(item_dir_path, arcname="parent/nested/dir")
+        archive.append(dir_path, recursive=False)
+        archive.append(nested_dir_path, recursive=False, arcname="parent/nested")
+        archive.append(item_file_path, arcname="parent/nested/file.txt")
+        archive.append(item_dir_path, arcname="parent/nested/dir")
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == [
@@ -632,7 +648,7 @@ def test_adding_directory_with_nested_items_non_recursively(
         assert archive.getmember("parent/nested/dir").isdir()
 
 
-def test_adding_directory_with_deeply_nested_items_non_recursively(
+def test_append_can_append_directories_with_deeply_nested_items_non_recursively(
     tmp_path, archive_path, write_mode, read_mode
 ):
     dir_path = tmp_path / "parent"
@@ -648,10 +664,10 @@ def test_adding_directory_with_deeply_nested_items_non_recursively(
     item_dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path, recursive=False)
-        archive.add(nested_dir_path, recursive=False, arcname="parent/deeply/nested")
-        archive.add(item_file_path, arcname="parent/deeply/nested/file.txt")
-        archive.add(item_dir_path, arcname="parent/deeply/nested/dir")
+        archive.append(dir_path, recursive=False)
+        archive.append(nested_dir_path, recursive=False, arcname="parent/deeply/nested")
+        archive.append(item_file_path, arcname="parent/deeply/nested/file.txt")
+        archive.append(item_dir_path, arcname="parent/deeply/nested/dir")
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == [
@@ -666,7 +682,7 @@ def test_adding_directory_with_deeply_nested_items_non_recursively(
         assert archive.getmember("parent/deeply/nested/dir").isdir()
 
 
-def test_adding_directory_non_recursively_does_not_add_its_items(
+def test_append_without_recursion_does_not_append_directory_items(
     tmp_path, archive_path, write_mode, read_mode
 ):
     dir_path = tmp_path / "parent"
@@ -688,28 +704,28 @@ def test_adding_directory_non_recursively_does_not_add_its_items(
     item_dir_path2.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path, recursive=False)
+        archive.append(dir_path, recursive=False)
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["parent"]
         assert archive.getmember("parent").isdir()
 
 
-def test_adding_directory_without_items_recursively(
+def test_append_can_handle_appending_directories_without_items_recursively(
     tmp_path, archive_path, write_mode, read_mode
 ):
     dir_path = tmp_path / "parent"
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path, recursive=True)
+        archive.append(dir_path, recursive=True)
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["parent"]
         assert archive.getmember("parent").isdir()
 
 
-def test_directory_items_are_added_recursively_by_default(
+def test_append_ads_directory_items_recursively_by_default(
     tmp_path, archive_path, write_mode, read_mode
 ):
     dir_path = tmp_path / "parent"
@@ -722,7 +738,7 @@ def test_directory_items_are_added_recursively_by_default(
     item_dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path, recursive=True)
+        archive.append(dir_path, recursive=True)
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert set(archive.getnames()) == {"parent", "parent/dir", "parent/file.txt"}
@@ -731,15 +747,15 @@ def test_directory_items_are_added_recursively_by_default(
         assert archive.getmember("parent/file.txt").isfile()
 
 
-def test_member_names_are_not_limited_by_file_system_file_type_nesting_rules(
+def test_append_does_not_limit_arcnames_by_file_system_file_type_nesting_rules(
     tmp_path, archive_path, write_mode, read_mode
 ):
     file_path = tmp_path / "file.txt"
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(file_path, arcname="file1.txt")
-        archive.add(file_path, arcname="file1.txt/file2.txt")
+        archive.append(file_path, arcname="file1.txt")
+        archive.append(file_path, arcname="file1.txt/file2.txt")
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == [
@@ -750,13 +766,13 @@ def test_member_names_are_not_limited_by_file_system_file_type_nesting_rules(
         assert archive.getmember("file1.txt/file2.txt").isfile()
 
 
-def test_file_contents_are_preserved(tmp_path, archive_path, write_mode, read_mode):
+def test_append_preserves_file_contents(tmp_path, archive_path, write_mode, read_mode):
     file_path = tmp_path / "file.txt"
     file_content = "This is some test content."
     file_path.write_text(file_content)
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(file_path)
+        archive.append(file_path)
 
     with tarfile.open(archive_path, read_mode) as archive:
         extracted_file = archive.extractfile("file.txt")
@@ -767,7 +783,7 @@ def test_file_contents_are_preserved(tmp_path, archive_path, write_mode, read_mo
 
 
 @pytest.mark.parametrize("permissions", [0o644, 0o600, 0o755, 0o700])
-def test_file_permissions_are_preserved(
+def test_append_preserves_file_permissions(
     tmp_path, archive_path, write_mode, read_mode, permissions
 ):
     file_path = tmp_path / "file.txt"
@@ -775,7 +791,7 @@ def test_file_permissions_are_preserved(
     file_path.chmod(permissions)
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(file_path)
+        archive.append(file_path)
 
     with tarfile.open(archive_path, read_mode) as archive:
         member = archive.getmember("file.txt")
@@ -783,7 +799,7 @@ def test_file_permissions_are_preserved(
 
 
 @pytest.mark.parametrize("permissions", [0o755, 0o700, 0o775, 0o777])
-def test_directory_permissions_are_preserved(
+def test_append_preserves_directory_permissions(
     tmp_path, archive_path, write_mode, read_mode, permissions
 ):
     dir_path = tmp_path / "dir"
@@ -791,14 +807,14 @@ def test_directory_permissions_are_preserved(
     dir_path.chmod(permissions)
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path)
+        archive.append(dir_path)
 
     with tarfile.open(archive_path, read_mode) as archive:
         member = archive.getmember("dir")
         assert member.mode & 0o777 == permissions
 
 
-def test_add_dereferences_symlinks_if_option_is_true(
+def test_append_dereferences_symlinks_if_option_is_true(
     tmp_path, archive_path, write_mode, read_mode
 ):
     target_file_path = tmp_path / "target.txt"
@@ -809,7 +825,7 @@ def test_add_dereferences_symlinks_if_option_is_true(
     symlink_path.symlink_to(target_file_path)
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(symlink_path, dereference=True)
+        archive.append(symlink_path, dereference=True)
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["symlink.txt"]
@@ -822,7 +838,7 @@ def test_add_dereferences_symlinks_if_option_is_true(
         assert extracted_content == target_file_content
 
 
-def test_add_does_not_dereference_symlinks_if_option_is_false(
+def test_append_does_not_dereference_symlinks_if_option_is_false(
     tmp_path, archive_path, write_mode, read_mode
 ):
     target_file_path = tmp_path / "target.txt"
@@ -832,7 +848,7 @@ def test_add_does_not_dereference_symlinks_if_option_is_false(
     symlink_path.symlink_to(target_file_path.relative_to(symlink_path.parent))
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(symlink_path, dereference=False)
+        archive.append(symlink_path, dereference=False)
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["symlink.txt"]
@@ -841,7 +857,7 @@ def test_add_does_not_dereference_symlinks_if_option_is_false(
         assert member.linkname == "target.txt"
 
 
-def test_add_does_not_dereference_symlinks_by_default(
+def test_append_does_not_dereference_symlinks_by_default(
     tmp_path, archive_path, write_mode, read_mode
 ):
     target_file_path = tmp_path / "target.txt"
@@ -851,7 +867,7 @@ def test_add_does_not_dereference_symlinks_by_default(
     symlink_path.symlink_to(target_file_path.relative_to(symlink_path.parent))
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(symlink_path)
+        archive.append(symlink_path)
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["symlink.txt"]
@@ -860,7 +876,7 @@ def test_add_does_not_dereference_symlinks_by_default(
         assert member.linkname == "target.txt"
 
 
-def test_add_raises_if_dereferencing_symlink_to_non_existing_path(
+def test_append_raises_if_dereferencing_symlink_to_non_existing_path(
     tmp_path, archive_path, write_mode
 ):
     symlink_path = tmp_path / "symlink.txt"
@@ -868,10 +884,10 @@ def test_add_raises_if_dereferencing_symlink_to_non_existing_path(
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
         with pytest.raises(FileNotFoundError, match="path does not exist"):
-            archive.add(symlink_path, dereference=True)
+            archive.append(symlink_path, dereference=True)
 
 
-def test_file_addition_order_is_preserved(
+def test_append_preserves_file_addition_order(
     tmp_path, archive_path, write_mode, read_mode
 ):
     file_path1 = tmp_path / "file1.txt"
@@ -884,15 +900,15 @@ def test_file_addition_order_is_preserved(
     file_path3.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(file_path2)
-        archive.add(file_path1)
-        archive.add(file_path3)
+        archive.append(file_path2)
+        archive.append(file_path1)
+        archive.append(file_path3)
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["file2.txt", "file1.txt", "file3.txt"]
 
 
-def test_directory_addition_order_is_preserved(
+def test_append_preserves_directory_addition_order(
     tmp_path, archive_path, write_mode, read_mode
 ):
     dir_path1 = tmp_path / "dir1"
@@ -905,15 +921,15 @@ def test_directory_addition_order_is_preserved(
     dir_path3.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path2)
-        archive.add(dir_path1)
-        archive.add(dir_path3)
+        archive.append(dir_path2)
+        archive.append(dir_path1)
+        archive.append(dir_path3)
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["dir2", "dir1", "dir3"]
 
 
-def test_file_and_directory_addition_order_is_preserved(
+def test_append_preserves_file_and_directory_addition_order(
     tmp_path, archive_path, write_mode, read_mode
 ):
     file_path1 = tmp_path / "a"
@@ -929,16 +945,16 @@ def test_file_and_directory_addition_order_is_preserved(
     dir_path2.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        archive.add(dir_path2)
-        archive.add(file_path1)
-        archive.add(file_path2)
-        archive.add(dir_path1)
+        archive.append(dir_path2)
+        archive.append(file_path1)
+        archive.append(file_path2)
+        archive.append(dir_path1)
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["d", "a", "b", "c"]
 
 
-def test_arcnames_must_be_relative(tmp_path, archive_path, write_mode):
+def test_append_requires_arcnames_to_be_relative(tmp_path, archive_path, write_mode):
     file_path = tmp_path / "file.txt"
     file_path.touch()
 
@@ -946,10 +962,10 @@ def test_arcnames_must_be_relative(tmp_path, archive_path, write_mode):
         with pytest.raises(
             ArchiveAppendingError, match="paths in archives must be relative"
         ):
-            archive.add(file_path, arcname="/absolute/path/file.txt")
+            archive.append(file_path, arcname="/absolute/path/file.txt")
 
 
-def test_arcnames_must_not_contain_parent_references(
+def test_append_requires_arcnames_to_not_contain_parent_references(
     tmp_path, archive_path, write_mode
 ):
     file_path = tmp_path / "file.txt"
@@ -959,4 +975,4 @@ def test_arcnames_must_not_contain_parent_references(
         with pytest.raises(
             ArchiveAppendingError, match="paths in archives must not have `..`"
         ):
-            archive.add(file_path, arcname="../../file.txt")
+            archive.append(file_path, arcname="../../file.txt")

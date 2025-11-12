@@ -3,6 +3,21 @@ from typing_extensions import Self
 from pathlib import Path
 from os import PathLike
 
+class FastarError(Exception):
+    """Base exception for all fastar errors."""
+
+class ArchiveClosedError(FastarError):
+    """Exception raised when attempting to use a closed archive."""
+
+class ArchiveUnpackingError(FastarError):
+    """Exception raised when unpacking an archive fails."""
+
+class ArchiveAppendingError(FastarError):
+    """Exception raised when appending to an archive fails."""
+
+class NameDerivationError(ArchiveAppendingError):
+    """Exception raised when a file name cannot be derived from a path."""
+
 class ArchiveWriter:
     """A tar archive writer that supports compressed and uncompressed formats."""
 
@@ -21,7 +36,8 @@ class ArchiveWriter:
             An ArchiveWriter instance
 
         Raises:
-            RuntimeError: If an unsupported mode is provided
+            ValueError: If an unsupported mode is provided
+            IOError: If the file cannot be opened
         """
 
     def add(
@@ -41,7 +57,9 @@ class ArchiveWriter:
             dereference: If True, add the target of symlinks instead of the symlink itself
 
         Raises:
-            RuntimeError: If the archive is closed or the path doesn't exist
+            ArchiveClosedError: If the archive is already closed
+            ArchiveAppendingError: If the target cannot be added to the archive
+            IOError: If there's an error reading the target file or directory
         """
 
     def close(self) -> None:
@@ -49,7 +67,7 @@ class ArchiveWriter:
         Close the archive and flush all pending writes.
 
         Raises:
-            RuntimeError: If there's an error flushing the writer
+            IOError: If there's an error flushing the archive
         """
 
     def __enter__(self) -> Self:
@@ -76,7 +94,7 @@ class ArchiveReader:
             An ArchiveReader instance
 
         Raises:
-            RuntimeError: If an unsupported mode is provided
+            ValueError: If an unsupported mode is provided
             IOError: If the file cannot be opened
         """
 
@@ -88,8 +106,9 @@ class ArchiveReader:
             to: Destination directory path
 
         Raises:
-            RuntimeError: If the archive is closed
-            IOError: If extraction fails
+            ArchiveClosedError: If the archive is already closed
+            ArchiveUnpackingError: If the archive cannot be unpacked
+            IOError: If extraction fails due to I/O errors
         """
 
     def close(self) -> None:
@@ -114,6 +133,10 @@ def open(
 
     Returns:
         An ArchiveWriter instance
+
+    Raises:
+        ValueError: If an unsupported mode is provided
+        IOError: If the file cannot be opened
     """
 
 @overload
@@ -129,4 +152,8 @@ def open(
 
     Returns:
         An ArchiveReader instance
+
+    Raises:
+        ValueError: If an unsupported mode is provided
+        IOError: If the file cannot be opened
     """

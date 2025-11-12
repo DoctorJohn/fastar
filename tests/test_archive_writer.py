@@ -1,14 +1,48 @@
 import tarfile
-from fastar import ArchiveWriter
+from fastar import (
+    ArchiveAppendingError,
+    ArchiveClosedError,
+    ArchiveWriter,
+    NameDerivationError,
+)
 import pytest
 import psutil
 
 
 def test_open_raises_on_unsupported_mode(archive_path):
     with pytest.raises(
-        RuntimeError, match="unsupported mode; only 'w' and 'w:gz' are supported"
+        ValueError,
+        match="unsupported mode; only 'w' and 'w:gz' are supported",
     ):
         ArchiveWriter.open(archive_path, "invalid-mode")  # type: ignore[arg-type]
+
+
+def test_open_raises_if_file_does_not_exist(write_mode):
+    with pytest.raises(
+        FileNotFoundError,
+        match="No such file or directory",
+    ):
+        ArchiveWriter.open("/non/existing/path/archive.tar", write_mode)
+
+
+def test_open_raises_if_path_is_directory(tmp_path, write_mode):
+    with pytest.raises(
+        IsADirectoryError,
+        match="Is a directory",
+    ):
+        ArchiveWriter.open(tmp_path, write_mode)
+
+
+def test_open_raises_if_no_permissions(tmp_path, write_mode):
+    archive_path = tmp_path / "archive.tar"
+    archive_path.touch()
+    archive_path.chmod(0o000)
+
+    with pytest.raises(
+        PermissionError,
+        match="Permission denied",
+    ):
+        ArchiveWriter.open(archive_path, write_mode)
 
 
 def test_opening_and_closing_creates_empty_archive(archive_path, write_mode, read_mode):
@@ -50,6 +84,20 @@ def test_context_manager_closes_archive(archive_path, write_mode):
     assert process.open_files() == []
 
 
+def test_close_gracefully_handles_multiple_calls(archive_path, write_mode):
+    archive = ArchiveWriter.open(archive_path, write_mode)
+    archive.close()
+    archive.close()
+    archive.close()
+
+
+def test_close_gracefully_handles_unlinked_archives(archive_path, write_mode):
+    archive = ArchiveWriter.open(archive_path, write_mode)
+    assert archive_path.exists()
+    archive_path.unlink()
+    archive.close()
+
+
 def test_add_raises_if_archive_is_already_closed(tmp_path, archive_path, write_mode):
     file_path = tmp_path / "file.txt"
     file_path.touch()
@@ -57,7 +105,7 @@ def test_add_raises_if_archive_is_already_closed(tmp_path, archive_path, write_m
     archive = ArchiveWriter.open(archive_path, write_mode)
     archive.close()
 
-    with pytest.raises(RuntimeError, match="archive is already closed"):
+    with pytest.raises(ArchiveClosedError, match="archive is already closed"):
         archive.add(file_path)
 
 
@@ -68,7 +116,7 @@ def test_add_raises_if_file_name_cannot_be_determined(
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        with pytest.raises(RuntimeError, match="cannot derive name from path"):
+        with pytest.raises(NameDerivationError, match="cannot derive name from path"):
             archive.add(file_path / "..")
 
 
@@ -76,7 +124,7 @@ def test_add_raises_if_path_does_not_exist(tmp_path, archive_path, write_mode):
     non_existing_path = tmp_path / "non_existing.txt"
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        with pytest.raises(RuntimeError, match="path does not exist"):
+        with pytest.raises(FileNotFoundError, match="path does not exist"):
             archive.add(non_existing_path)
 
 
@@ -819,7 +867,7 @@ def test_add_raises_if_dereferencing_symlink_to_non_existing_path(
     symlink_path.symlink_to("non_existing_target.txt")
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        with pytest.raises(RuntimeError, match="path does not exist"):
+        with pytest.raises(FileNotFoundError, match="path does not exist"):
             archive.add(symlink_path, dereference=True)
 
 
@@ -896,6 +944,19 @@ def test_arcnames_must_be_relative(tmp_path, archive_path, write_mode):
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
         with pytest.raises(
-            OSError, match="paths in archives must be relative when setting path for"
+            ArchiveAppendingError, match="paths in archives must be relative"
         ):
             archive.add(file_path, arcname="/absolute/path/file.txt")
+
+
+def test_arcnames_must_not_contain_parent_references(
+    tmp_path, archive_path, write_mode
+):
+    file_path = tmp_path / "file.txt"
+    file_path.touch()
+
+    with ArchiveWriter.open(archive_path, write_mode) as archive:
+        with pytest.raises(
+            ArchiveAppendingError, match="paths in archives must not have `..`"
+        ):
+            archive.add(file_path, arcname="../../file.txt")

@@ -1,4 +1,4 @@
-from fastar import ArchiveReader
+from fastar import ArchiveClosedError, ArchiveReader
 from random import randint
 import os
 import sys
@@ -10,9 +10,47 @@ import psutil
 
 def test_open_raises_on_unsupported_mode(archive_path):
     with pytest.raises(
-        RuntimeError, match="unsupported mode; only 'r' and 'r:gz' are supported"
+        ValueError,
+        match="unsupported mode; only 'r' and 'r:gz' are supported",
     ):
         ArchiveReader.open(archive_path, "invalid-mode")  # type: ignore[arg-type]
+
+
+def test_open_raises_if_file_does_not_exist(archive_path, read_mode):
+    if archive_path.exists():
+        archive_path.unlink()
+
+    with pytest.raises(
+        FileNotFoundError,
+        match="No such file or directory",
+    ):
+        ArchiveReader.open(archive_path, read_mode)
+
+
+@pytest.mark.xfail(
+    reason="""
+        Not fully supported in Rust yet
+        https://github.com/rust-lang/rust/issues/71213
+        https://doc.rust-lang.org/beta/std/os/wasi/fs/trait.OpenOptionsExt.html#tymethod.directory
+    """
+)
+def test_open_raises_if_path_is_directory(tmp_path, read_mode):
+    with pytest.raises(
+        IsADirectoryError,
+        match="is a directory, not an archive file",
+    ):
+        ArchiveReader.open(tmp_path, read_mode)
+
+
+def test_open_raises_if_insufficient_permissions(archive_path, read_mode):
+    archive_path.touch()
+    archive_path.chmod(0o000)
+
+    with pytest.raises(
+        PermissionError,
+        match="Permission denied",
+    ):
+        ArchiveReader.open(archive_path, read_mode)
 
 
 def test_close_closes_archive(archive_path, write_mode, read_mode):
@@ -56,7 +94,7 @@ def test_extract_raises_if_archive_is_already_closed(
     reader = ArchiveReader.open(archive_path, read_mode)
     reader.close()
 
-    with pytest.raises(RuntimeError, match="archive is already closed"):
+    with pytest.raises(ArchiveClosedError, match="archive is already closed"):
         reader.extract("some/path")
 
 

@@ -1,10 +1,11 @@
+use crate::errors::*;
 use flate2::write::GzEncoder;
 use flate2::Compression;
-use pyo3::exceptions::PyRuntimeError;
+use pyo3::exceptions::{PyFileNotFoundError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyType};
 use std::fs::File;
-use std::io::Write;
+use std::io::{ErrorKind, Write};
 use std::path::{Path, PathBuf};
 
 #[pyclass]
@@ -46,7 +47,7 @@ impl ArchiveWriter {
                     },
                 )
             }
-            _ => Err(PyRuntimeError::new_err(
+            _ => Err(PyValueError::new_err(
                 "unsupported mode; only 'w' and 'w:gz' are supported",
             )),
         }
@@ -63,14 +64,14 @@ impl ArchiveWriter {
         let builder = self
             .builder
             .as_mut()
-            .ok_or_else(|| PyRuntimeError::new_err("archive is already closed"))?;
+            .ok_or_else(|| ArchiveClosedError::new_err("archive is already closed"))?;
 
         builder.follow_symlinks(dereference);
 
         let default_name = || -> PyResult<String> {
             let name = Path::new(&path)
                 .file_name()
-                .ok_or_else(|| PyRuntimeError::new_err("cannot derive name from path"))?
+                .ok_or_else(|| NameDerivationError::new_err("cannot derive name from path"))?
                 .to_string_lossy()
                 .into_owned();
             Ok(name)
@@ -80,16 +81,25 @@ impl ArchiveWriter {
 
         if path.is_dir() {
             if recursive {
-                builder.append_dir_all(&name, &path)?;
+                builder.append_dir_all(&name, &path)
             } else {
-                builder.append_dir(&name, &path)?;
+                builder.append_dir(&name, &path)
             }
         } else if path.is_file() {
-            builder.append_path_with_name(&path, &name)?;
+            builder.append_path_with_name(&path, &name)
         } else {
-            return Err(PyRuntimeError::new_err("path does not exist"));
+            return Err(PyFileNotFoundError::new_err(format!(
+                "path does not exist: {}",
+                path.display()
+            )));
         }
-        Ok(())
+        .map_err(|e: std::io::Error| {
+            if e.kind() == ErrorKind::Other {
+                ArchiveAppendingError::new_err(e.to_string())
+            } else {
+                e.into()
+            }
+        })
     }
 
     fn close(&mut self) -> PyResult<()> {

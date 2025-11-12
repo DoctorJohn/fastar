@@ -1,9 +1,10 @@
+use crate::errors::{ArchiveClosedError, ArchiveUnpackingError};
 use flate2::read::GzDecoder;
-use pyo3::exceptions::PyRuntimeError;
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyType};
 use std::fs::File;
-use std::io::Read;
+use std::io::{ErrorKind, Read};
 use std::path::PathBuf;
 use tar::Archive;
 
@@ -46,7 +47,7 @@ impl ArchiveReader {
                     },
                 )
             }
-            _ => Err(PyRuntimeError::new_err(
+            _ => Err(PyValueError::new_err(
                 "unsupported mode; only 'r' and 'r:gz' are supported",
             )),
         }
@@ -56,10 +57,15 @@ impl ArchiveReader {
         let archive = self
             .archive
             .as_mut()
-            .ok_or_else(|| PyRuntimeError::new_err("archive is already closed"))?;
+            .ok_or_else(|| ArchiveClosedError::new_err("archive is already closed"))?;
 
-        archive.unpack(to)?;
-        Ok(())
+        archive.unpack(to).map_err(|e: std::io::Error| {
+            if e.kind() == ErrorKind::Other {
+                ArchiveUnpackingError::new_err(e.to_string())
+            } else {
+                e.into()
+            }
+        })
     }
 
     fn close(&mut self) -> PyResult<()> {

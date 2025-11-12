@@ -1,5 +1,10 @@
 import tarfile
-from fastar import ArchiveAppendingError, ArchiveClosedError, ArchiveWriter, NameDerivationError
+from fastar import (
+    ArchiveAppendingError,
+    ArchiveClosedError,
+    ArchiveWriter,
+    NameDerivationError,
+)
 import pytest
 import psutil
 
@@ -938,7 +943,9 @@ def test_arcnames_must_be_relative(tmp_path, archive_path, write_mode):
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        with pytest.raises(ArchiveAppendingError, match="paths in archives must be relative"):
+        with pytest.raises(
+            ArchiveAppendingError, match="paths in archives must be relative"
+        ):
             archive.add(file_path, arcname="/absolute/path/file.txt")
 
 
@@ -949,5 +956,7 @@ def test_arcnames_must_not_contain_parent_references(
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as archive:
-        with pytest.raises(ArchiveAppendingError, match="paths in archives must not have `..`"):
+        with pytest.raises(
+            ArchiveAppendingError, match="paths in archives must not have `..`"
+        ):
             archive.add(file_path, arcname="../../file.txt")

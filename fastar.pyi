@@ -37,7 +37,7 @@ class ArchiveWriter:
 
         Raises:
             ValueError: If an unsupported mode is provided
-            IOError: If the file cannot be opened
+            OSError: If the file cannot be opened
         """
 
     def append(
@@ -59,7 +59,7 @@ class ArchiveWriter:
         Raises:
             ArchiveClosedError: If the archive is already closed
             ArchiveAppendingError: If the target cannot be appended to the archive
-            IOError: If there's an error reading the target file or directory
+            OSError: If there's an error reading the target file or directory
         """
 
     def close(self) -> None:
@@ -67,7 +67,7 @@ class ArchiveWriter:
         Close the archive and flush all pending writes.
 
         Raises:
-            IOError: If there's an error flushing the archive
+            OSError: If there's an error flushing the archive
         """
 
     def __enter__(self) -> Self:
@@ -95,7 +95,7 @@ class ArchiveReader:
 
         Raises:
             ValueError: If an unsupported mode is provided
-            IOError: If the file cannot be opened
+            OSError: If the file cannot be opened
         """
 
     def unpack(self, to: Union[str, Path, PathLike[str]]) -> None:
@@ -108,7 +108,7 @@ class ArchiveReader:
         Raises:
             ArchiveClosedError: If the archive is already closed
             ArchiveUnpackingError: If the archive cannot be unpacked
-            IOError: If unpacking fails due to I/O errors
+            OSError: If unpacking fails due to I/O errors
         """
 
     def close(self) -> None:
@@ -136,7 +136,7 @@ def open(
 
     Raises:
         ValueError: If an unsupported mode is provided
-        IOError: If the file cannot be opened
+        OSError: If the file cannot be opened
     """
 
 @overload
@@ -155,5 +155,5 @@ def open(
 
     Raises:
         ValueError: If an unsupported mode is provided
-        IOError: If the file cannot be opened
+        OSError: If the file cannot be opened
     """

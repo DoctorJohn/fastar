@@ -27,25 +27,52 @@ pip install fastar
 
 ## Usage
 
+This section shows basic examples of how to create and extract tar archives using Fastar. For more usage examples, please refer directly to the test cases in the [tests](tests/) directory.
+
+### Working with uncompressed tar archives
+
 ```python
 import fastar
 from pathlib import Path
 
 
-some_file = Path('file.txt')
-some_file.write_text('Hello, Fastar!')
+input_file = Path("file.txt")
+input_file.write_text("Hello, Fastar!")
 
 
-with fastar.open('archive.tar', 'w') as archive:
-    archive.append(some_file)
+with fastar.open("archive.tar", "w") as archive:
+    archive.append(input_file)
 
 
-with fastar.open('archive.tar', 'r') as archive:
-    archive.unpack(Path("extracted/"))
+with fastar.open("archive.tar", "r") as archive:
+    archive.unpack("output/")
 
 
-extracted_file = Path('extracted/file.txt')
-print(extracted_file.read_text())  # Hello, Fastar!
+unpacked_file = Path("output/file.txt")
+print(unpacked_file.read_text())  # Hello, Fastar!
+```
+
+### Working with gzip-compressed tar archives
+
+```python
+import fastar
+from pathlib import Path
+
+
+input_file = Path("file.txt")
+input_file.write_text("Hello, Fastar!")
+
+
+with fastar.open("archive.tar.gz", "w:gz") as archive:
+    archive.append(input_file)
+
+
+with fastar.open("archive.tar.gz", "r:gz") as archive:
+    archive.unpack("output/")
+
+
+unpacked_file = Path("output/file.txt")
+print(unpacked_file.read_text())  # Hello, Fastar!
 ```
 
 ## Development

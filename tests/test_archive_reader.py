@@ -1,4 +1,4 @@
-from fastar import ArchiveClosedError, ArchiveReader
+from fastar import ArchiveClosedError, ArchiveReader, ArchiveUnpackingError
 from random import randint
 import os
 import sys
@@ -498,3 +498,14 @@ def test_unpack_does_not_alter_archive(
         reader.unpack(target_path)
 
     assert hashlib.sha256(archive_path.read_bytes()).hexdigest() == archive_hash
+
+
+def test_unpack_raises_when_archive_entries_are_not_iterable(target_path, archive_path):
+    with tarfile.open(archive_path, "w:gz"):
+        pass
+
+    with ArchiveReader.open(archive_path, "r") as reader:
+        with pytest.raises(
+            ArchiveUnpackingError, match="failed to iterate over archive"
+        ):
+            reader.unpack(target_path)

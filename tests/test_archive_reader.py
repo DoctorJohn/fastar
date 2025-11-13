@@ -1,5 +1,6 @@
 from fastar import ArchiveClosedError, ArchiveReader, ArchiveUnpackingError
 from random import randint
+from datetime import datetime
 import os
 import sys
 import hashlib
@@ -234,7 +235,7 @@ def test_unpack_preserves_file_permissions(
     sys.version_info < (3, 9),
     reason="Before 3.9, tarfile perserved mtime in a non-compatible way",
 )
-def test_unpack_preserves_file_modification_time(
+def test_unpack_preserves_file_modification_time_by_default(
     source_path, target_path, archive_path, write_mode, read_mode
 ):
     input_file = source_path / "file.txt"
@@ -251,6 +252,33 @@ def test_unpack_preserves_file_modification_time(
 
     output_file = target_path / "file.txt"
     assert output_file.stat().st_mtime == timestamp
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 9),
+    reason="Before 3.9, tarfile perserved mtime in a non-compatible way",
+)
+@pytest.mark.parametrize("preserve", [True, False])
+def test_unpack_preserves_file_modification_time_only_if_option_is_true(
+    source_path, target_path, archive_path, write_mode, read_mode, preserve
+):
+    input_file = source_path / "file.txt"
+    input_file.touch()
+
+    timestamp = randint(1_600_000_000, 1_700_000_000)
+    os.utime(input_file, (timestamp, timestamp))
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_file, arcname="file.txt")
+
+    archive_open_time = datetime.now().timestamp()
+
+    with ArchiveReader.open(archive_path, read_mode) as reader:
+        reader.unpack(target_path, preserve_mtime=preserve)
+
+    output_file = target_path / "file.txt"
+    assert (output_file.stat().st_mtime == timestamp) == preserve
+    assert (output_file.stat().st_mtime >= archive_open_time) == (not preserve)
 
 
 @pytest.mark.parametrize("permissions", [0o755, 0o700, 0o775, 0o777])

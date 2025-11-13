@@ -27,7 +27,7 @@ pip install fastar
 
 ## Usage
 
-This section shows basic examples of how to create and extract tar archives using Fastar. For more usage examples, please refer directly to the test cases in the [tests](tests/) directory.
+This section shows basic examples of how to create and extract tar archives using Fastar. For more usage examples, please refer directly to the test cases in the [tests](https://github.com/DoctorJohn/fastar/tree/main/tests) directory.
 
 ### Working with uncompressed tar archives
 

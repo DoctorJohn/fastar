@@ -17,7 +17,7 @@
 [codspeed-image]: https://img.shields.io/endpoint?url=https://codspeed.io/badge.json
 [codspeed-url]: https://codspeed.io/DoctorJohn/fastar
 
-High-level bindings for the Rust [tar](https://crates.io/crates/tar) crate.
+The `fastar` library wraps the Rust [tar](https://crates.io/crates/tar) and [flate2](https://crates.io/crates/flate2) crates, providing a high-performance way for with compressed and uncompressed tar archives in Python.
 
 ## Installation
 
@@ -27,7 +27,7 @@ pip install fastar
 
 ## Usage
 
-This section shows basic examples of how to create and extract tar archives using Fastar. For more usage examples, please refer directly to the test cases in the [tests](tests/) directory.
+This section shows basic examples of how to create and extract tar archives using Fastar. For more usage examples, please refer directly to the test cases in the [tests](https://github.com/DoctorJohn/fastar/tree/main/tests) directory.
 
 ### Working with uncompressed tar archives
 

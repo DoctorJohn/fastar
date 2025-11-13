@@ -47,7 +47,7 @@ dependencies = [
 
 [[package]]
 name = "fastar"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "flate2",
  "pyo3",

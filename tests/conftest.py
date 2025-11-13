@@ -28,7 +28,12 @@ def target_path(tmp_path) -> Path:
     return path
 
 
-@pytest.fixture(params=[("w", "r"), ("w:gz", "r:gz")])
+@pytest.fixture(
+    params=[
+        pytest.param(("w", "r"), id="uncompressed"),
+        pytest.param(("w:gz", "r:gz"), id="gzip_compressed"),
+    ]
+)
 def modes(request) -> Tuple[WriteMode, ReadMode]:
     return request.param
 

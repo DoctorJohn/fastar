@@ -98,12 +98,15 @@ class ArchiveReader:
             OSError: If the file cannot be opened
         """
 
-    def unpack(self, to: Union[str, Path, PathLike[str]]) -> None:
+    def unpack(
+        self, to: Union[str, Path, PathLike[str]], preserve_mtime: bool = True
+    ) -> None:
         """
         Unpack all contents of the archive and put them into the specified directory.
 
         Args:
             to: Destination directory path
+            preserve_mtime: whether to preserve file modification times
 
         Raises:
             ArchiveClosedError: If the archive is already closed

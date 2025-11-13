@@ -53,11 +53,14 @@ impl ArchiveReader {
         }
     }
 
-    fn unpack(&mut self, to: PathBuf) -> PyResult<()> {
+    #[pyo3(signature = (to, preserve_mtime=true))]
+    fn unpack(&mut self, to: PathBuf, preserve_mtime: bool) -> PyResult<()> {
         let archive = self
             .archive
             .as_mut()
             .ok_or_else(|| ArchiveClosedError::new_err("archive is already closed"))?;
+
+        archive.set_preserve_mtime(preserve_mtime);
 
         archive.unpack(to).map_err(|e: std::io::Error| {
             if e.kind() == ErrorKind::Other {

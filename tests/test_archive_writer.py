@@ -992,3 +992,33 @@ def test_append_requires_arcnames_to_not_contain_parent_references(
             ArchiveAppendingError, match="paths in archives must not have `..`"
         ):
             archive.append(file_path, arcname="../../file.txt")
+
+
+def test_append_handles_arcnames_of_type_path(
+    tmp_path, archive_path, write_mode, read_mode
+):
+    file_path = tmp_path / "nested" / "file.txt"
+    file_path.parent.mkdir(parents=True)
+    file_path.touch()
+
+    with ArchiveWriter.open(archive_path, write_mode) as archive:
+        archive.append(file_path, arcname=file_path.relative_to(tmp_path))
+
+    with tarfile.open(archive_path, read_mode) as archive:
+        assert archive.getnames() == ["nested/file.txt"]
+        assert archive.getmember("nested/file.txt").isfile()
+
+
+def test_append_handles_arcnames_of_type_str(
+    tmp_path, archive_path, write_mode, read_mode
+):
+    file_path = tmp_path / "nested" / "file.txt"
+    file_path.parent.mkdir(parents=True)
+    file_path.touch()
+
+    with ArchiveWriter.open(archive_path, write_mode) as archive:
+        archive.append(file_path, arcname=str(file_path.relative_to(tmp_path)))
+
+    with tarfile.open(archive_path, read_mode) as archive:
+        assert archive.getnames() == ["nested/file.txt"]
+        assert archive.getmember("nested/file.txt").isfile()

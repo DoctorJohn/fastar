@@ -43,7 +43,7 @@ class ArchiveWriter:
     def append(
         self,
         path: Union[str, Path, PathLike[str]],
-        arcname: Optional[str] = None,
+        arcname: Optional[Union[str, Path, PathLike[str]]] = None,
         recursive: bool = True,
         dereference: bool = False,
     ) -> None:

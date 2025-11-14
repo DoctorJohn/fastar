@@ -1,12 +1,14 @@
-from fastar import ArchiveClosedError, ArchiveReader, ArchiveUnpackingError
-from random import randint
-from datetime import datetime
+import hashlib
 import os
 import sys
-import hashlib
 import tarfile
-import pytest
+from datetime import datetime
+from random import randint
+
 import psutil
+import pytest
+
+from fastar import ArchiveClosedError, ArchiveReader, ArchiveUnpackingError
 
 
 def test_open_raises_on_unsupported_mode(archive_path):

@@ -1,5 +1,6 @@
-import fastar
 import tarfile
+
+import fastar
 
 
 def test_benchmark_appending_incrementally_with_tarfile(

@@ -6,7 +6,7 @@ use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyType};
 use std::fs::File;
 use std::io::{ErrorKind, Write};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 #[pyclass]
 pub struct ArchiveWriter {
@@ -57,7 +57,7 @@ impl ArchiveWriter {
     fn append(
         &mut self,
         path: PathBuf,
-        arcname: Option<String>,
+        arcname: Option<PathBuf>,
         recursive: bool,
         dereference: bool,
     ) -> PyResult<()> {
@@ -68,16 +68,10 @@ impl ArchiveWriter {
 
         builder.follow_symlinks(dereference);
 
-        let default_name = || -> PyResult<String> {
-            let name = Path::new(&path)
-                .file_name()
-                .ok_or_else(|| NameDerivationError::new_err("cannot derive name from path"))?
-                .to_string_lossy()
-                .into_owned();
-            Ok(name)
-        }()?;
-
-        let name = arcname.unwrap_or(default_name);
+        let name = arcname
+            .unwrap_or(PathBuf::from(path.file_name().ok_or_else(|| {
+                NameDerivationError::new_err("cannot derive name from path")
+            })?));
 
         if path.is_dir() {
             if recursive {

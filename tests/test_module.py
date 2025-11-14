@@ -1,6 +1,8 @@
-import pytest
-import fastar
 import tarfile
+
+import pytest
+
+import fastar
 
 
 def test_open_raises_on_unsupported_mode(archive_path):

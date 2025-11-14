@@ -1,7 +1,8 @@
-from typing import Literal, Optional, Union, overload
-from typing_extensions import Self
-from pathlib import Path
 from os import PathLike
+from pathlib import Path
+from typing import Literal, Optional, Union, overload
+
+from typing_extensions import Self
 
 class FastarError(Exception):
     """Base exception for all fastar errors."""

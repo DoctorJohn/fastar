@@ -1,12 +1,14 @@
 import tarfile
+
+import psutil
+import pytest
+
 from fastar import (
     ArchiveAppendingError,
     ArchiveClosedError,
     ArchiveWriter,
     NameDerivationError,
 )
-import pytest
-import psutil
 
 
 def test_open_raises_on_unsupported_mode(archive_path):

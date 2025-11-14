@@ -1,9 +1,10 @@
-from typing import Literal, Tuple
-from typing_extensions import TypeAlias
 from pathlib import Path
-import pytest
-import fastar
+from typing import Literal, Tuple
 
+import pytest
+from typing_extensions import TypeAlias
+
+import fastar
 
 WriteMode: TypeAlias = Literal["w", "w:gz"]
 ReadMode: TypeAlias = Literal["r", "r:gz"]

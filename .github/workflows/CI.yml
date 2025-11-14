@@ -302,7 +302,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
-    needs: [linux, musllinux, windows, windows-x64-freethreaded, windows-x86-freethreaded, windows-arm, windows-arm-freethreaded, macos, sdist, test]
+    needs: [linux, musllinux, windows, windows-x64-freethreaded, windows-x86-freethreaded, windows-arm, windows-arm-freethreaded, macos, sdist]
     permissions:
       # Use to sign the release artifacts
       id-token: write

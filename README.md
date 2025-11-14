@@ -17,7 +17,7 @@
 [codspeed-image]: https://img.shields.io/endpoint?url=https://codspeed.io/badge.json
 [codspeed-url]: https://codspeed.io/DoctorJohn/fastar
 
-The `fastar` library wraps the Rust [tar](https://crates.io/crates/tar) and [flate2](https://crates.io/crates/flate2) crates, providing a high-performance way for with compressed and uncompressed tar archives in Python.
+The `fastar` library wraps the Rust [tar](https://crates.io/crates/tar) and [flate2](https://crates.io/crates/flate2) crates, providing a high-performance way to work with compressed and uncompressed tar archives in Python.
 
 ## Installation
 

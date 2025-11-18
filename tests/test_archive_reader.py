@@ -14,7 +14,7 @@ from fastar import ArchiveClosedError, ArchiveReader, ArchiveUnpackingError
 def test_open_raises_on_unsupported_mode(archive_path):
     with pytest.raises(
         ValueError,
-        match="unsupported mode; only 'r' and 'r:gz' are supported",
+        match="unsupported mode; only 'r', 'r:gz', and 'r:zst' are supported",
     ):
         ArchiveReader.open(archive_path, "invalid-mode")  # type: ignore[arg-type]
 

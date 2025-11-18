@@ -7,6 +7,7 @@ use std::fs::File;
 use std::io::{ErrorKind, Read};
 use std::path::PathBuf;
 use tar::Archive;
+use zstd::stream::read::Decoder as ZstdDecoder;
 
 #[pyclass(unsendable)]
 pub struct ArchiveReader {
@@ -36,6 +37,18 @@ impl ArchiveReader {
                     },
                 )
             }
+            "r:zst" => {
+                let file = File::open(path)?;
+                let decoder = ZstdDecoder::new(file)?;
+                let reader: Box<dyn Read> = Box::new(decoder);
+                let archive = Archive::new(reader);
+                Py::new(
+                    py,
+                    ArchiveReader {
+                        archive: Some(archive),
+                    },
+                )
+            }
             "r" => {
                 let file = File::open(path)?;
                 let reader: Box<dyn Read> = Box::new(file);
@@ -48,7 +61,7 @@ impl ArchiveReader {
                 )
             }
             _ => Err(PyValueError::new_err(
-                "unsupported mode; only 'r' and 'r:gz' are supported",
+                "unsupported mode; only 'r', 'r:gz', and 'r:zst' are supported",
             )),
         }
     }

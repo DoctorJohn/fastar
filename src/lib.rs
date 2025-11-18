@@ -14,16 +14,16 @@ use writer::ArchiveWriter;
 #[pyo3(signature = (path, mode))]
 fn open(py: Python<'_>, path: PathBuf, mode: &str) -> PyResult<PyObject> {
     match mode {
-        "w" | "w:gz" => {
+        "w" | "w:gz" | "w:zst" => {
             let writer = ArchiveWriter::open(&py.get_type::<ArchiveWriter>(), py, path, mode)?;
             Ok(writer.into())
         }
-        "r" | "r:gz" => {
+        "r" | "r:gz" | "r:zst" => {
             let reader = ArchiveReader::open(&py.get_type::<ArchiveReader>(), py, path, mode)?;
             Ok(reader.into())
         }
         _ => Err(PyValueError::new_err(
-            "unsupported mode; supported modes are 'w', 'w:gz', 'r', 'r:gz'",
+            "unsupported mode; supported modes are 'w', 'w:gz', 'w:zst', 'r', 'r:gz', 'r:zst'",
         )),
     }
 }

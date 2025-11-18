@@ -17,7 +17,7 @@
 [codspeed-image]: https://img.shields.io/endpoint?url=https://codspeed.io/badge.json
 [codspeed-url]: https://codspeed.io/DoctorJohn/fastar
 
-The `fastar` library wraps the Rust [tar](https://crates.io/crates/tar) and [flate2](https://crates.io/crates/flate2) crates, providing a high-performance way to work with compressed and uncompressed tar archives in Python.
+The `fastar` library wraps the Rust [tar](https://crates.io/crates/tar), [flate2](https://crates.io/crates/flate2), and [zstd](https://crates.io/crates/zstd) crates, providing a high-performance way to work with compressed and uncompressed tar archives in Python.
 
 ## Installation
 
@@ -68,6 +68,29 @@ with fastar.open("archive.tar.gz", "w:gz") as archive:
 
 
 with fastar.open("archive.tar.gz", "r:gz") as archive:
+    archive.unpack("output/")
+
+
+unpacked_file = Path("output/file.txt")
+print(unpacked_file.read_text())  # Hello, Fastar!
+```
+
+### Working with zstd-compressed tar archives
+
+```python
+import fastar
+from pathlib import Path
+
+
+input_file = Path("file.txt")
+input_file.write_text("Hello, Fastar!")
+
+
+with fastar.open("archive.tar.zst", "w:zst") as archive:
+    archive.append(input_file)
+
+
+with fastar.open("archive.tar.zst", "r:zst") as archive:
     archive.unpack("output/")
 
 

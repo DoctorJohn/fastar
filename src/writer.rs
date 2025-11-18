@@ -7,6 +7,7 @@ use pyo3::types::{PyAny, PyType};
 use std::fs::File;
 use std::io::{ErrorKind, Write};
 use std::path::PathBuf;
+use zstd::stream::write::Encoder as ZstdEncoder;
 
 #[pyclass]
 pub struct ArchiveWriter {
@@ -36,6 +37,18 @@ impl ArchiveWriter {
                     },
                 )
             }
+            "w:zst" => {
+                let file = File::create(path)?;
+                let enc = ZstdEncoder::new(file, 0)?; // default compression level
+                let writer: Box<dyn Write + Send + Sync> = Box::new(enc);
+                let builder = tar::Builder::new(writer);
+                Py::new(
+                    py,
+                    ArchiveWriter {
+                        builder: Some(builder),
+                    },
+                )
+            }
             "w" => {
                 let file = File::create(path)?;
                 let writer: Box<dyn Write + Send + Sync> = Box::new(file);
@@ -48,7 +61,7 @@ impl ArchiveWriter {
                 )
             }
             _ => Err(PyValueError::new_err(
-                "unsupported mode; only 'w' and 'w:gz' are supported",
+                "unsupported mode; only 'w', 'w:gz', and 'w:zst' are supported",
             )),
         }
     }

@@ -14,7 +14,7 @@ from fastar import (
 def test_open_raises_on_unsupported_mode(archive_path):
     with pytest.raises(
         ValueError,
-        match="unsupported mode; only 'w' and 'w:gz' are supported",
+        match="unsupported mode; only 'w', 'w:gz', and 'w:zst' are supported",
     ):
         ArchiveWriter.open(archive_path, "invalid-mode")  # type: ignore[arg-type]
 

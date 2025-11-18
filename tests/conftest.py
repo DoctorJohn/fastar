@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 from typing import Literal, Tuple
 
@@ -6,8 +7,8 @@ from typing_extensions import TypeAlias
 
 import fastar
 
-WriteMode: TypeAlias = Literal["w", "w:gz"]
-ReadMode: TypeAlias = Literal["r", "r:gz"]
+WriteMode: TypeAlias = Literal["w", "w:gz", "w:zst"]
+ReadMode: TypeAlias = Literal["r", "r:gz", "r:zst"]
 
 
 @pytest.fixture
@@ -33,6 +34,14 @@ def target_path(tmp_path) -> Path:
     params=[
         pytest.param(("w", "r"), id="uncompressed"),
         pytest.param(("w:gz", "r:gz"), id="gzip_compressed"),
+        pytest.param(
+            ("w:zst", "r:zst"),
+            marks=pytest.mark.skipif(
+                sys.version_info < (3, 14),
+                reason="Before 3.14, tarfile did not support zstd compression",
+            ),
+            id="zstd_compressed",
+        ),
     ]
 )
 def modes(request) -> Tuple[WriteMode, ReadMode]:

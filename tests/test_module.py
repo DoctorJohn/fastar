@@ -8,7 +8,7 @@ import fastar
 def test_open_raises_on_unsupported_mode(archive_path):
     with pytest.raises(
         ValueError,
-        match="unsupported mode; supported modes are 'w', 'w:gz', 'r', 'r:gz'",
+        match="unsupported mode; supported modes are 'w', 'w:gz', 'w:zst', 'r', 'r:gz', 'r:zst'",
     ):
         fastar.open(archive_path, "invalid-mode")  # type: ignore[call-overload]
 

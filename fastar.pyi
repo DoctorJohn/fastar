@@ -24,14 +24,16 @@ class ArchiveWriter:
 
     @classmethod
     def open(
-        cls, path: Union[str, Path, PathLike[str]], mode: Literal["w", "w:gz"] = "w:gz"
+        cls,
+        path: Union[str, Path, PathLike[str]],
+        mode: Literal["w", "w:gz", "w:zst"] = "w:gz",
     ) -> Self:
         """
         Open a tar archive for writing.
 
         Args:
             path: Path to the archive file to create
-            mode: Write mode - 'w' for uncompressed, 'w:gz' for gzip compressed (default)
+            mode: Write mode - 'w' for uncompressed, 'w:gz' for gzip compressed (default), 'w:zst' for zstd compressed
 
         Returns:
             An ArchiveWriter instance
@@ -82,14 +84,16 @@ class ArchiveReader:
 
     @classmethod
     def open(
-        cls, path: Union[str, Path, PathLike[str]], mode: Literal["r", "r:gz"] = "r:gz"
+        cls,
+        path: Union[str, Path, PathLike[str]],
+        mode: Literal["r", "r:gz", "r:zst"] = "r:gz",
     ) -> Self:
         """
         Open a tar archive for reading.
 
         Args:
             path: Path to the archive file to read
-            mode: Read mode - 'r' for uncompressed, 'r:gz' for gzip compressed (default)
+            mode: Read mode - 'r' for uncompressed, 'r:gz' for gzip compressed (default), 'r:zst' for zstd compressed
 
         Returns:
             An ArchiveReader instance
@@ -126,14 +130,14 @@ class ArchiveReader:
 
 @overload
 def open(
-    path: Union[str, Path, PathLike[str]], mode: Literal["w", "w:gz"]
+    path: Union[str, Path, PathLike[str]], mode: Literal["w", "w:gz", "w:zst"]
 ) -> ArchiveWriter:
     """
     Open a tar archive for writing.
 
     Args:
         path: Path to the archive file to create
-        mode: Write mode - 'w' for uncompressed, 'w:gz' for gzip compressed
+        mode: Write mode - 'w' for uncompressed, 'w:gz' for gzip compressed, 'w:zst' for zstd compressed
 
     Returns:
         An ArchiveWriter instance
@@ -145,14 +149,14 @@ def open(
 
 @overload
 def open(
-    path: Union[str, Path, PathLike[str]], mode: Literal["r", "r:gz"]
+    path: Union[str, Path, PathLike[str]], mode: Literal["r", "r:gz", "r:zst"]
 ) -> ArchiveReader:
     """
     Open a tar archive for reading.
 
     Args:
         path: Path to the archive file to read
-        mode: Read mode - 'r' for uncompressed, 'r:gz' for gzip compressed
+        mode: Read mode - 'r' for uncompressed, 'r:gz' for gzip compressed, 'r:zst' for zstd compressed
 
     Returns:
         An ArchiveReader instance

@@ -17,7 +17,7 @@ pub struct ArchiveWriter {
 #[pymethods]
 impl ArchiveWriter {
     #[classmethod]
-    #[pyo3(signature = (path, mode="w:gz"))]
+    #[pyo3(signature = (path, mode))]
     pub fn open(
         _cls: &Bound<'_, PyType>,
         py: Python<'_>,

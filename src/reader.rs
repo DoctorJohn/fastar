@@ -17,7 +17,7 @@ pub struct ArchiveReader {
 #[pymethods]
 impl ArchiveReader {
     #[classmethod]
-    #[pyo3(signature = (path, mode="r:gz"))]
+    #[pyo3(signature = (path, mode))]
     pub fn open(
         _cls: &Bound<'_, PyType>,
         py: Python<'_>,

@@ -26,14 +26,14 @@ class ArchiveWriter:
     def open(
         cls,
         path: Union[str, Path, PathLike[str]],
-        mode: Literal["w", "w:gz", "w:zst"] = "w:gz",
+        mode: Literal["w", "w:gz", "w:zst"],
     ) -> Self:
         """
         Open a tar archive for writing.
 
         Args:
             path: Path to the archive file to create
-            mode: Write mode - 'w' for uncompressed, 'w:gz' for gzip compressed (default), 'w:zst' for zstd compressed
+            mode: Write mode - 'w' for uncompressed, 'w:gz' for gzip compressed, 'w:zst' for zstd compressed
 
         Returns:
             An ArchiveWriter instance
@@ -86,14 +86,14 @@ class ArchiveReader:
     def open(
         cls,
         path: Union[str, Path, PathLike[str]],
-        mode: Literal["r", "r:gz", "r:zst"] = "r:gz",
+        mode: Literal["r", "r:gz", "r:zst"],
     ) -> Self:
         """
         Open a tar archive for reading.
 
         Args:
             path: Path to the archive file to read
-            mode: Read mode - 'r' for uncompressed, 'r:gz' for gzip compressed (default), 'r:zst' for zstd compressed
+            mode: Read mode - 'r' for uncompressed, 'r:gz' for gzip compressed, 'r:zst' for zstd compressed
 
         Returns:
             An ArchiveReader instance

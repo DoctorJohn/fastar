@@ -86,14 +86,14 @@ class ArchiveReader:
     def open(
         cls,
         path: Union[str, Path, PathLike[str]],
-        mode: Literal["r", "r:gz", "r:zst"],
+        mode: Literal["r", "r:", "r:gz", "r:zst"],
     ) -> Self:
         """
         Open a tar archive for reading.
 
         Args:
             path: Path to the archive file to read
-            mode: Read mode - 'r' for uncompressed, 'r:gz' for gzip compressed, 'r:zst' for zstd compressed
+            mode: Read mode - 'r' for transparent compression, 'r:gz' for gzip compressed, 'r:zst' for zstd compressed
 
         Returns:
             An ArchiveReader instance
@@ -149,14 +149,14 @@ def open(
 
 @overload
 def open(
-    path: Union[str, Path, PathLike[str]], mode: Literal["r", "r:gz", "r:zst"]
+    path: Union[str, Path, PathLike[str]], mode: Literal["r", "r:", "r:gz", "r:zst"]
 ) -> ArchiveReader:
     """
     Open a tar archive for reading.
 
     Args:
         path: Path to the archive file to read
-        mode: Read mode - 'r' for uncompressed, 'r:gz' for gzip compressed, 'r:zst' for zstd compressed
+        mode: Read mode - 'r' for transparent compression, 'r:gz' for gzip compressed, 'r:zst' for zstd compressed
 
     Returns:
         An ArchiveReader instance

@@ -18,12 +18,12 @@ fn open(py: Python<'_>, path: PathBuf, mode: &str) -> PyResult<PyObject> {
             let writer = ArchiveWriter::open(&py.get_type::<ArchiveWriter>(), py, path, mode)?;
             Ok(writer.into())
         }
-        "r" | "r:gz" | "r:zst" => {
+        "r" | "r:" | "r:gz" | "r:zst" => {
             let reader = ArchiveReader::open(&py.get_type::<ArchiveReader>(), py, path, mode)?;
             Ok(reader.into())
         }
         _ => Err(PyValueError::new_err(
-            "unsupported mode; supported modes are 'w', 'w:gz', 'w:zst', 'r', 'r:gz', 'r:zst'",
+            "unsupported mode; supported modes are 'w', 'w:gz', 'w:zst', 'r', 'r:', 'r:gz', 'r:zst'",
         )),
     }
 }

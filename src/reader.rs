@@ -4,7 +4,7 @@ use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyType};
 use std::fs::File;
-use std::io::{ErrorKind, Read};
+use std::io::{ErrorKind, Read, Seek, SeekFrom};
 use std::path::PathBuf;
 use tar::Archive;
 use zstd::stream::read::Decoder as ZstdDecoder;
@@ -49,7 +49,7 @@ impl ArchiveReader {
                     },
                 )
             }
-            "r" => {
+            "r:" => {
                 let file = File::open(path)?;
                 let reader: Box<dyn Read> = Box::new(file);
                 let archive = Archive::new(reader);
@@ -60,8 +60,32 @@ impl ArchiveReader {
                     },
                 )
             }
+            "r" => {
+                let mut file = File::open(path)?;
+                let compression = detect_compression(&mut file)?;
+
+                let reader: Box<dyn Read> = match compression {
+                    CompressionType::Gzip => {
+                        let decoder = GzDecoder::new(file);
+                        Box::new(decoder)
+                    }
+                    CompressionType::Zstd => {
+                        let decoder = ZstdDecoder::new(file)?;
+                        Box::new(decoder)
+                    }
+                    CompressionType::None => Box::new(file),
+                };
+
+                let archive = Archive::new(reader);
+                Py::new(
+                    py,
+                    ArchiveReader {
+                        archive: Some(archive),
+                    },
+                )
+            }
             _ => Err(PyValueError::new_err(
-                "unsupported mode; only 'r', 'r:gz', and 'r:zst' are supported",
+                "unsupported mode; only 'r', 'r:', 'r:gz', and 'r:zst' are supported",
             )),
         }
     }
@@ -102,4 +126,29 @@ impl ArchiveReader {
         self.close()?;
         Ok(false) // Propagate exceptions if any
     }
+}
+
+#[derive(Debug)]
+enum CompressionType {
+    None,
+    Gzip,
+    Zstd,
+}
+
+fn detect_compression(file: &mut File) -> std::io::Result<CompressionType> {
+    let mut magic = [0u8; 4];
+    file.read_exact(&mut magic)?;
+    file.seek(SeekFrom::Start(0))?;
+
+    // Check for gzip magic bytes (1f 8b)
+    if magic[0] == 0x1f && magic[1] == 0x8b {
+        return Ok(CompressionType::Gzip);
+    }
+
+    // Check for zstd magic bytes (28 b5 2f fd)
+    if magic[0] == 0x28 && magic[1] == 0xb5 && magic[2] == 0x2f && magic[3] == 0xfd {
+        return Ok(CompressionType::Zstd);
+    }
+
+    Ok(CompressionType::None)
 }

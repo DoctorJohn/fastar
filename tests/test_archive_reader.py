@@ -14,7 +14,7 @@ from fastar import ArchiveClosedError, ArchiveReader, ArchiveUnpackingError
 def test_open_raises_on_unsupported_mode(archive_path):
     with pytest.raises(
         ValueError,
-        match="unsupported mode; only 'r', 'r:gz', and 'r:zst' are supported",
+        match="unsupported mode; only 'r', 'r:', 'r:gz', and 'r:zst' are supported",
     ):
         ArchiveReader.open(archive_path, "invalid-mode")  # type: ignore[arg-type]
 
@@ -54,6 +54,24 @@ def test_open_raises_if_insufficient_permissions(archive_path, read_mode):
         match="Permission denied",
     ):
         ArchiveReader.open(archive_path, read_mode)
+
+
+def test_open_in_transparent_mode_detects_compression(
+    source_path, target_path, archive_path, write_mode
+):
+    input_file = source_path / "file.txt"
+    input_file.write_text("Test content")
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_file, arcname="file.txt")
+
+    with ArchiveReader.open(archive_path, "r") as reader:
+        reader.unpack(target_path)
+
+    output_file = target_path / "file.txt"
+    assert output_file.exists()
+    assert output_file.is_file()
+    assert output_file.read_text() == "Test content"
 
 
 def test_close_closes_archive(archive_path, write_mode, read_mode):
@@ -534,7 +552,7 @@ def test_unpack_raises_when_archive_entries_are_not_iterable(target_path, archiv
     with tarfile.open(archive_path, "w:gz"):
         pass
 
-    with ArchiveReader.open(archive_path, "r") as reader:
+    with ArchiveReader.open(archive_path, "r:") as reader:
         with pytest.raises(
             ArchiveUnpackingError, match="failed to iterate over archive"
         ):

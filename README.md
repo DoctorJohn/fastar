@@ -11,7 +11,7 @@
 [pypi-image]: https://img.shields.io/pypi/v/fastar
 [pypi-url]: https://pypi.org/project/fastar/
 [downloads-image]: https://img.shields.io/pypi/dm/fastar
-[downloads-url]: https://pypi.org/project/fastar/
+[downloads-url]: https://pypistats.org/packages/fastar
 [license-image]: https://img.shields.io/pypi/l/fastar
 [license-url]: https://github.com/DoctorJohn/fastar/blob/main/LICENSE
 [codspeed-image]: https://img.shields.io/endpoint?url=https://codspeed.io/badge.json

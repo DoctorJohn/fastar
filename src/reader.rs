@@ -1,3 +1,4 @@
+use crate::entry::ArchiveEntry;
 use crate::errors::{ArchiveClosedError, ArchiveUnpackingError};
 use flate2::read::GzDecoder;
 use pyo3::exceptions::PyValueError;
@@ -125,6 +126,21 @@ impl ArchiveReader {
     ) -> PyResult<bool> {
         self.close()?;
         Ok(false) // Propagate exceptions if any
+    }
+
+    fn get_entries(&mut self) -> PyResult<Vec<ArchiveEntry>> {
+        let archive = self
+            .archive
+            .as_mut()
+            .ok_or_else(|| ArchiveClosedError::new_err("archive is already closed"))?;
+
+        let mut result = Vec::new();
+
+        for entry in archive.entries()? {
+            result.push(ArchiveEntry::new(&entry?)?);
+        }
+
+        Ok(result)
     }
 }
 

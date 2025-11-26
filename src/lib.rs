@@ -1,3 +1,4 @@
+mod entry;
 mod errors;
 mod reader;
 mod writer;
@@ -6,6 +7,7 @@ use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use std::path::PathBuf;
 
+use entry::ArchiveEntry;
 use errors::*;
 use reader::ArchiveReader;
 use writer::ArchiveWriter;
@@ -30,6 +32,7 @@ fn open(py: Python<'_>, path: PathBuf, mode: &str) -> PyResult<PyObject> {
 
 #[pymodule]
 fn fastar(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_class::<ArchiveEntry>()?;
     m.add_class::<ArchiveWriter>()?;
     m.add_class::<ArchiveReader>()?;
     m.add_function(wrap_pyfunction!(open, m)?)?;

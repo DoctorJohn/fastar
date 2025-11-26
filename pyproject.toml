@@ -38,6 +38,7 @@ build-backend = "maturin"
 
 [dependency-groups]
 dev = [
+    "backports-zstd>=1.1.0 ; python_version >= '3.9'",
     "maturin>=1.9.6",
     "mypy>=1.14.1",
     "pre-commit>=3.5.0",

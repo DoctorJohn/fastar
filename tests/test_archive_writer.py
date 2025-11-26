@@ -1,3 +1,4 @@
+import sys
 import tarfile
 
 import psutil
@@ -9,6 +10,11 @@ from fastar import (
     ArchiveWriter,
     NameDerivationError,
 )
+
+if sys.version_info >= (3, 9) and sys.version_info < (3, 14):
+    from backports.zstd import tarfile
+else:
+    import tarfile
 
 
 def test_open_raises_on_unsupported_mode(archive_path):

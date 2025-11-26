@@ -9,6 +9,11 @@ import pytest
 
 from fastar import ArchiveClosedError, ArchiveReader, ArchiveUnpackingError
 
+if sys.version_info >= (3, 9) and sys.version_info < (3, 14):
+    from backports.zstd import tarfile
+else:
+    import tarfile
+
 
 def test_open_raises_on_unsupported_mode(archive_path):
     with pytest.raises(

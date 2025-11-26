@@ -1,6 +1,11 @@
-import tarfile
+import sys
 
 import fastar
+
+if sys.version_info >= (3, 9) and sys.version_info < (3, 14):
+    from backports.zstd import tarfile
+else:
+    import tarfile
 
 
 def test_benchmark_unpacking_all_with_tarfile(

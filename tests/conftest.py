@@ -37,8 +37,8 @@ def target_path(tmp_path) -> Path:
         pytest.param(
             ("w:zst", "r:zst"),
             marks=pytest.mark.skipif(
-                sys.version_info < (3, 14),
-                reason="Before 3.14, tarfile did not support zstd compression",
+                sys.version_info < (3, 9),
+                reason="Before 3.9, neither tarfile nor backports support zstd compression",
             ),
             id="zstd_compressed",
         ),

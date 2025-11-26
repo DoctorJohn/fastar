@@ -29,8 +29,6 @@ pip install fastar
 
 This section shows basic examples of how to create and extract tar archives using Fastar. For more usage examples, please refer directly to the test cases in the [tests](https://github.com/DoctorJohn/fastar/tree/main/tests) directory.
 
-### Working with uncompressed tar archives
-
 ```python
 import fastar
 from pathlib import Path
@@ -52,51 +50,19 @@ unpacked_file = Path("output/file.txt")
 print(unpacked_file.read_text())  # Hello, Fastar!
 ```
 
-### Working with gzip-compressed tar archives
+### Opening Modes
 
-```python
-import fastar
-from pathlib import Path
+The `fastar.open` method supports the following modes:
 
-
-input_file = Path("file.txt")
-input_file.write_text("Hello, Fastar!")
-
-
-with fastar.open("archive.tar.gz", "w:gz") as archive:
-    archive.append(input_file)
-
-
-with fastar.open("archive.tar.gz", "r:gz") as archive:
-    archive.unpack("output/")
-
-
-unpacked_file = Path("output/file.txt")
-print(unpacked_file.read_text())  # Hello, Fastar!
-```
-
-### Working with zstd-compressed tar archives
-
-```python
-import fastar
-from pathlib import Path
-
-
-input_file = Path("file.txt")
-input_file.write_text("Hello, Fastar!")
-
-
-with fastar.open("archive.tar.zst", "w:zst") as archive:
-    archive.append(input_file)
-
-
-with fastar.open("archive.tar.zst", "r:zst") as archive:
-    archive.unpack("output/")
-
-
-unpacked_file = Path("output/file.txt")
-print(unpacked_file.read_text())  # Hello, Fastar!
-```
+| Mode          | Action        | Compression               |
+| ------------- | ------------- | ------------------------- |
+| `"w"`         | Write         | None                      |
+| `"w:gz"`      | Write         | Gzip                      |
+| `"w:zst"`     | Write         | Zstandard                 |
+| `"r"`         | Read          | Automatically detected    |
+| `"r:"`        | Read          | None                      |
+| `"r:gz"`      | Read          | Gzip                      |
+| `"r:zst"`     | Read          | Zstandard                 |
 
 ## Development
 

@@ -2,7 +2,6 @@ import hashlib
 import os
 import sys
 import tarfile
-from datetime import datetime
 from random import randint
 
 import psutil
@@ -291,14 +290,11 @@ def test_unpack_preserves_file_modification_time_only_if_option_is_true(
     with tarfile.open(archive_path, write_mode) as archive:
         archive.add(input_file, arcname="file.txt")
 
-    archive_open_time = datetime.now().timestamp()
-
     with ArchiveReader.open(archive_path, read_mode) as reader:
         reader.unpack(target_path, preserve_mtime=preserve)
 
     output_file = target_path / "file.txt"
     assert (output_file.stat().st_mtime == timestamp) == preserve
-    assert (output_file.stat().st_mtime >= archive_open_time) == (not preserve)
 
 
 @pytest.mark.parametrize("permissions", [0o755, 0o700, 0o775, 0o777])

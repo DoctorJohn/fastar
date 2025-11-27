@@ -41,12 +41,12 @@ def test_open_raises_if_file_does_not_exist(archive_path, read_mode):
         https://doc.rust-lang.org/beta/std/os/wasi/fs/trait.OpenOptionsExt.html#tymethod.directory
     """
 )
-def test_open_raises_if_path_is_directory(tmp_path, read_mode):
+def test_open_raises_if_path_is_directory(source_path, read_mode):
     with pytest.raises(
         IsADirectoryError,
         match="is a directory, not an archive file",
     ):
-        ArchiveReader.open(tmp_path, read_mode)
+        ArchiveReader.open(source_path, read_mode)
 
 
 def test_open_raises_if_insufficient_permissions(archive_path, read_mode):

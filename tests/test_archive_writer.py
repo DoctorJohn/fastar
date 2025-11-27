@@ -33,16 +33,16 @@ def test_open_raises_if_file_does_not_exist(write_mode):
         ArchiveWriter.open("/non/existing/path/archive.tar", write_mode)
 
 
-def test_open_raises_if_path_is_directory(tmp_path, write_mode):
+def test_open_raises_if_path_is_directory(source_path, write_mode):
     with pytest.raises(
         IsADirectoryError,
         match="Is a directory",
     ):
-        ArchiveWriter.open(tmp_path, write_mode)
+        ArchiveWriter.open(source_path, write_mode)
 
 
-def test_open_raises_if_no_permissions(tmp_path, write_mode):
-    archive_path = tmp_path / "archive.tar"
+def test_open_raises_if_no_permissions(source_path, write_mode):
+    archive_path = source_path / "archive.tar"
     archive_path.touch()
     archive_path.chmod(0o000)
 
@@ -70,9 +70,9 @@ def test_context_manager_created_empty_archive(archive_path, write_mode, read_mo
 
 
 def test_open_overwrites_existing_archive_by_default(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    file_path = tmp_path / "file.txt"
+    file_path = source_path / "file.txt"
     file_path.touch()
 
     with tarfile.open(archive_path, write_mode) as archive:
@@ -122,8 +122,10 @@ def test_close_gracefully_handles_unlinked_archives(archive_path, write_mode):
     writer.close()
 
 
-def test_append_raises_if_archive_is_already_closed(tmp_path, archive_path, write_mode):
-    file_path = tmp_path / "file.txt"
+def test_append_raises_if_archive_is_already_closed(
+    source_path, archive_path, write_mode
+):
+    file_path = source_path / "file.txt"
     file_path.touch()
 
     writer = ArchiveWriter.open(archive_path, write_mode)
@@ -134,9 +136,9 @@ def test_append_raises_if_archive_is_already_closed(tmp_path, archive_path, writ
 
 
 def test_append_raises_if_file_name_cannot_be_determined(
-    tmp_path, archive_path, write_mode
+    source_path, archive_path, write_mode
 ):
-    file_path = tmp_path / "file.txt"
+    file_path = source_path / "file.txt"
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -144,16 +146,18 @@ def test_append_raises_if_file_name_cannot_be_determined(
             writer.append(file_path / "..")
 
 
-def test_append_raises_if_path_does_not_exist(tmp_path, archive_path, write_mode):
-    non_existing_path = tmp_path / "non_existing.txt"
+def test_append_raises_if_path_does_not_exist(source_path, archive_path, write_mode):
+    non_existing_path = source_path / "non_existing.txt"
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
         with pytest.raises(FileNotFoundError, match="path does not exist"):
             writer.append(non_existing_path)
 
 
-def test_append_can_append_a_single_file(tmp_path, archive_path, write_mode, read_mode):
-    file_path = tmp_path / "file.txt"
+def test_append_can_append_a_single_file(
+    source_path, archive_path, write_mode, read_mode
+):
+    file_path = source_path / "file.txt"
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -165,12 +169,12 @@ def test_append_can_append_a_single_file(tmp_path, archive_path, write_mode, rea
 
 
 def test_append_can_append_multiple_files(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    file_path1 = tmp_path / "file1.txt"
+    file_path1 = source_path / "file1.txt"
     file_path1.touch()
 
-    file_path2 = tmp_path / "file2.txt"
+    file_path2 = source_path / "file2.txt"
     file_path2.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -184,9 +188,9 @@ def test_append_can_append_multiple_files(
 
 
 def test_append_can_append_a_single_directory(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    dir_path = tmp_path / "dir"
+    dir_path = source_path / "dir"
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -198,12 +202,12 @@ def test_append_can_append_a_single_directory(
 
 
 def test_append_can_append_multiple_directories(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    dir_path1 = tmp_path / "dir1"
+    dir_path1 = source_path / "dir1"
     dir_path1.mkdir()
 
-    dir_path2 = tmp_path / "dir2"
+    dir_path2 = source_path / "dir2"
     dir_path2.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -217,9 +221,9 @@ def test_append_can_append_multiple_directories(
 
 
 def test_append_can_append_a_single_nested_file(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    file_path = tmp_path / "file.txt"
+    file_path = source_path / "file.txt"
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -231,9 +235,9 @@ def test_append_can_append_a_single_nested_file(
 
 
 def test_append_can_append_multiple_nested_files(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    file_path = tmp_path / "file.txt"
+    file_path = source_path / "file.txt"
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -247,9 +251,9 @@ def test_append_can_append_multiple_nested_files(
 
 
 def test_append_can_append_a_single_nested_directory(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    dir_path = tmp_path / "dir"
+    dir_path = source_path / "dir"
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -261,9 +265,9 @@ def test_append_can_append_a_single_nested_directory(
 
 
 def test_append_can_append_multiple_nested_directories(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    dir_path = tmp_path / "dir"
+    dir_path = source_path / "dir"
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -277,9 +281,9 @@ def test_append_can_append_multiple_nested_directories(
 
 
 def test_append_can_append_a_single_deeply_nested_file(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    file_path = tmp_path / "file.txt"
+    file_path = source_path / "file.txt"
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -291,9 +295,9 @@ def test_append_can_append_a_single_deeply_nested_file(
 
 
 def test_append_can_append_multiple_deeply_nested_files(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    file_path = tmp_path / "file.txt"
+    file_path = source_path / "file.txt"
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -310,9 +314,9 @@ def test_append_can_append_multiple_deeply_nested_files(
 
 
 def test_append_can_append_a_single_deeply_nested_directory(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    dir_path = tmp_path / "dir"
+    dir_path = source_path / "dir"
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -324,9 +328,9 @@ def test_append_can_append_a_single_deeply_nested_directory(
 
 
 def test_append_can_append_multiple_deeply_nested_directories(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    dir_path = tmp_path / "dir"
+    dir_path = source_path / "dir"
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -343,12 +347,12 @@ def test_append_can_append_multiple_deeply_nested_directories(
 
 
 def test_append_can_append_files_and_directories(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    file_path = tmp_path / "file.txt"
+    file_path = source_path / "file.txt"
     file_path.touch()
 
-    dir_path = tmp_path / "dir"
+    dir_path = source_path / "dir"
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -362,12 +366,12 @@ def test_append_can_append_files_and_directories(
 
 
 def test_append_can_append_nested_files_and_directories(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    file_path = tmp_path / "file.txt"
+    file_path = source_path / "file.txt"
     file_path.touch()
 
-    dir_path = tmp_path / "dir"
+    dir_path = source_path / "dir"
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -381,12 +385,12 @@ def test_append_can_append_nested_files_and_directories(
 
 
 def test_append_can_append_deeply_nested_files_and_directories(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    file_path = tmp_path / "file.txt"
+    file_path = source_path / "file.txt"
     file_path.touch()
 
-    dir_path = tmp_path / "dir"
+    dir_path = source_path / "dir"
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -403,9 +407,9 @@ def test_append_can_append_deeply_nested_files_and_directories(
 
 
 def test_append_can_append_multi_level_files(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    file_path = tmp_path / "file.txt"
+    file_path = source_path / "file.txt"
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -425,9 +429,9 @@ def test_append_can_append_multi_level_files(
 
 
 def test_append_can_append_multi_level_directories(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    dir_path = tmp_path / "dir"
+    dir_path = source_path / "dir"
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -447,12 +451,12 @@ def test_append_can_append_multi_level_directories(
 
 
 def test_append_can_append_multi_level_files_and_directories(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    file_path = tmp_path / "file.txt"
+    file_path = source_path / "file.txt"
     file_path.touch()
 
-    dir_path = tmp_path / "dir"
+    dir_path = source_path / "dir"
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -484,9 +488,9 @@ def test_append_can_append_multi_level_files_and_directories(
 
 
 def test_append_appends_directories_with_items_recursively(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    dir_path = tmp_path / "parent"
+    dir_path = source_path / "parent"
     dir_path.mkdir()
 
     item_file_path = dir_path / "file.txt"
@@ -506,9 +510,9 @@ def test_append_appends_directories_with_items_recursively(
 
 
 def test_append_appends_directories_with_nested_items_recursively(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    dir_path = tmp_path / "parent"
+    dir_path = source_path / "parent"
     dir_path.mkdir()
 
     nested_dir_path = dir_path / "nested"
@@ -537,9 +541,9 @@ def test_append_appends_directories_with_nested_items_recursively(
 
 
 def test_append_appends_directories_with_deeply_nested_items_recursively(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    dir_path = tmp_path / "parent"
+    dir_path = source_path / "parent"
     dir_path.mkdir()
 
     nested_dir_path = dir_path / "super" / "duper" / "deeply" / "nested"
@@ -574,9 +578,9 @@ def test_append_appends_directories_with_deeply_nested_items_recursively(
 
 
 def test_append_appends_multi_level_directories_with_items_recursively(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    dir_path = tmp_path / "parent"
+    dir_path = source_path / "parent"
     dir_path.mkdir()
 
     item_file_path1 = dir_path / "file1.txt"
@@ -615,9 +619,9 @@ def test_append_appends_multi_level_directories_with_items_recursively(
 
 
 def test_append_can_append_directories_with_items_non_recursively(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    dir_path = tmp_path / "parent"
+    dir_path = source_path / "parent"
     dir_path.mkdir()
 
     item_file_path = dir_path / "file.txt"
@@ -639,9 +643,9 @@ def test_append_can_append_directories_with_items_non_recursively(
 
 
 def test_append_can_append_directories_with_nested_items_non_recursively(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    dir_path = tmp_path / "parent"
+    dir_path = source_path / "parent"
     dir_path.mkdir()
 
     nested_dir_path = dir_path / "nested"
@@ -673,9 +677,9 @@ def test_append_can_append_directories_with_nested_items_non_recursively(
 
 
 def test_append_can_append_directories_with_deeply_nested_items_non_recursively(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    dir_path = tmp_path / "parent"
+    dir_path = source_path / "parent"
     dir_path.mkdir()
 
     nested_dir_path = dir_path / "deeply" / "nested"
@@ -707,9 +711,9 @@ def test_append_can_append_directories_with_deeply_nested_items_non_recursively(
 
 
 def test_append_without_recursion_does_not_append_directory_items(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    dir_path = tmp_path / "parent"
+    dir_path = source_path / "parent"
     dir_path.mkdir()
 
     item_file_path1 = dir_path / "file1.txt"
@@ -736,9 +740,9 @@ def test_append_without_recursion_does_not_append_directory_items(
 
 
 def test_append_can_handle_appending_directories_without_items_recursively(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    dir_path = tmp_path / "parent"
+    dir_path = source_path / "parent"
     dir_path.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -750,9 +754,9 @@ def test_append_can_handle_appending_directories_without_items_recursively(
 
 
 def test_append_ads_directory_items_recursively_by_default(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    dir_path = tmp_path / "parent"
+    dir_path = source_path / "parent"
     dir_path.mkdir()
 
     item_file_path = dir_path / "file.txt"
@@ -772,9 +776,9 @@ def test_append_ads_directory_items_recursively_by_default(
 
 
 def test_append_does_not_limit_arcnames_by_file_system_file_type_nesting_rules(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    file_path = tmp_path / "file.txt"
+    file_path = source_path / "file.txt"
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -790,8 +794,10 @@ def test_append_does_not_limit_arcnames_by_file_system_file_type_nesting_rules(
         assert archive.getmember("file1.txt/file2.txt").isfile()
 
 
-def test_append_preserves_file_contents(tmp_path, archive_path, write_mode, read_mode):
-    file_path = tmp_path / "file.txt"
+def test_append_preserves_file_contents(
+    source_path, archive_path, write_mode, read_mode
+):
+    file_path = source_path / "file.txt"
     file_content = "This is some test content."
     file_path.write_text(file_content)
 
@@ -808,9 +814,9 @@ def test_append_preserves_file_contents(tmp_path, archive_path, write_mode, read
 
 @pytest.mark.parametrize("permissions", [0o644, 0o600, 0o755, 0o700])
 def test_append_preserves_file_permissions(
-    tmp_path, archive_path, write_mode, read_mode, permissions
+    source_path, archive_path, write_mode, read_mode, permissions
 ):
-    file_path = tmp_path / "file.txt"
+    file_path = source_path / "file.txt"
     file_path.touch()
     file_path.chmod(permissions)
 
@@ -824,9 +830,9 @@ def test_append_preserves_file_permissions(
 
 @pytest.mark.parametrize("permissions", [0o755, 0o700, 0o775, 0o777])
 def test_append_preserves_directory_permissions(
-    tmp_path, archive_path, write_mode, read_mode, permissions
+    source_path, archive_path, write_mode, read_mode, permissions
 ):
-    dir_path = tmp_path / "dir"
+    dir_path = source_path / "dir"
     dir_path.mkdir()
     dir_path.chmod(permissions)
 
@@ -839,13 +845,13 @@ def test_append_preserves_directory_permissions(
 
 
 def test_append_dereferences_symlinks_if_option_is_true(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    target_file_path = tmp_path / "target.txt"
+    target_file_path = source_path / "target.txt"
     target_file_content = "This is some test content."
     target_file_path.write_text(target_file_content)
 
-    symlink_path = tmp_path / "symlink.txt"
+    symlink_path = source_path / "symlink.txt"
     symlink_path.symlink_to(target_file_path)
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -863,12 +869,12 @@ def test_append_dereferences_symlinks_if_option_is_true(
 
 
 def test_append_does_not_dereference_symlinks_if_option_is_false(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    target_file_path = tmp_path / "target.txt"
+    target_file_path = source_path / "target.txt"
     target_file_path.touch()
 
-    symlink_path = tmp_path / "symlink.txt"
+    symlink_path = source_path / "symlink.txt"
     symlink_path.symlink_to(target_file_path.relative_to(symlink_path.parent))
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -882,12 +888,12 @@ def test_append_does_not_dereference_symlinks_if_option_is_false(
 
 
 def test_append_does_not_dereference_symlinks_by_default(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    target_file_path = tmp_path / "target.txt"
+    target_file_path = source_path / "target.txt"
     target_file_path.touch()
 
-    symlink_path = tmp_path / "symlink.txt"
+    symlink_path = source_path / "symlink.txt"
     symlink_path.symlink_to(target_file_path.relative_to(symlink_path.parent))
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -901,9 +907,9 @@ def test_append_does_not_dereference_symlinks_by_default(
 
 
 def test_append_raises_if_dereferencing_symlink_to_non_existing_path(
-    tmp_path, archive_path, write_mode
+    source_path, archive_path, write_mode
 ):
-    symlink_path = tmp_path / "symlink.txt"
+    symlink_path = source_path / "symlink.txt"
     symlink_path.symlink_to("non_existing_target.txt")
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -912,15 +918,15 @@ def test_append_raises_if_dereferencing_symlink_to_non_existing_path(
 
 
 def test_append_preserves_file_addition_order(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    file_path1 = tmp_path / "file1.txt"
+    file_path1 = source_path / "file1.txt"
     file_path1.touch()
 
-    file_path2 = tmp_path / "file2.txt"
+    file_path2 = source_path / "file2.txt"
     file_path2.touch()
 
-    file_path3 = tmp_path / "file3.txt"
+    file_path3 = source_path / "file3.txt"
     file_path3.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -933,15 +939,15 @@ def test_append_preserves_file_addition_order(
 
 
 def test_append_preserves_directory_addition_order(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    dir_path1 = tmp_path / "dir1"
+    dir_path1 = source_path / "dir1"
     dir_path1.mkdir()
 
-    dir_path2 = tmp_path / "dir2"
+    dir_path2 = source_path / "dir2"
     dir_path2.mkdir()
 
-    dir_path3 = tmp_path / "dir3"
+    dir_path3 = source_path / "dir3"
     dir_path3.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -954,18 +960,18 @@ def test_append_preserves_directory_addition_order(
 
 
 def test_append_preserves_file_and_directory_addition_order(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    file_path1 = tmp_path / "a"
+    file_path1 = source_path / "a"
     file_path1.touch()
 
-    file_path2 = tmp_path / "b"
+    file_path2 = source_path / "b"
     file_path2.touch()
 
-    dir_path1 = tmp_path / "c"
+    dir_path1 = source_path / "c"
     dir_path1.mkdir()
 
-    dir_path2 = tmp_path / "d"
+    dir_path2 = source_path / "d"
     dir_path2.mkdir()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -978,8 +984,8 @@ def test_append_preserves_file_and_directory_addition_order(
         assert archive.getnames() == ["d", "a", "b", "c"]
 
 
-def test_append_requires_arcnames_to_be_relative(tmp_path, archive_path, write_mode):
-    file_path = tmp_path / "file.txt"
+def test_append_requires_arcnames_to_be_relative(source_path, archive_path, write_mode):
+    file_path = source_path / "file.txt"
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -990,9 +996,9 @@ def test_append_requires_arcnames_to_be_relative(tmp_path, archive_path, write_m
 
 
 def test_append_requires_arcnames_to_not_contain_parent_references(
-    tmp_path, archive_path, write_mode
+    source_path, archive_path, write_mode
 ):
-    file_path = tmp_path / "file.txt"
+    file_path = source_path / "file.txt"
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
@@ -1003,14 +1009,14 @@ def test_append_requires_arcnames_to_not_contain_parent_references(
 
 
 def test_append_handles_arcnames_of_type_path(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    file_path = tmp_path / "nested" / "file.txt"
+    file_path = source_path / "nested" / "file.txt"
     file_path.parent.mkdir(parents=True)
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
-        writer.append(file_path, arcname=file_path.relative_to(tmp_path))
+        writer.append(file_path, arcname=file_path.relative_to(source_path))
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["nested/file.txt"]
@@ -1018,14 +1024,14 @@ def test_append_handles_arcnames_of_type_path(
 
 
 def test_append_handles_arcnames_of_type_str(
-    tmp_path, archive_path, write_mode, read_mode
+    source_path, archive_path, write_mode, read_mode
 ):
-    file_path = tmp_path / "nested" / "file.txt"
+    file_path = source_path / "nested" / "file.txt"
     file_path.parent.mkdir(parents=True)
     file_path.touch()
 
     with ArchiveWriter.open(archive_path, write_mode) as writer:
-        writer.append(file_path, arcname=str(file_path.relative_to(tmp_path)))
+        writer.append(file_path, arcname=str(file_path.relative_to(source_path)))
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["nested/file.txt"]

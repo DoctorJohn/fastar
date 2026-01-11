@@ -1,6 +1,6 @@
 from os import PathLike
 from pathlib import Path
-from typing import Literal, Optional, Union, overload
+from typing import Literal, overload
 
 from typing_extensions import Self
 
@@ -25,7 +25,7 @@ class ArchiveWriter:
     @classmethod
     def open(
         cls,
-        path: Union[str, Path, PathLike[str]],
+        path: str | Path | PathLike[str],
         mode: Literal["w", "w:gz", "w:zst"],
     ) -> Self:
         """
@@ -45,8 +45,8 @@ class ArchiveWriter:
 
     def append(
         self,
-        path: Union[str, Path, PathLike[str]],
-        arcname: Optional[Union[str, Path, PathLike[str]]] = None,
+        path: str | Path | PathLike[str],
+        arcname: str | Path | PathLike[str] | None = None,
         recursive: bool = True,
         dereference: bool = False,
     ) -> None:
@@ -85,7 +85,7 @@ class ArchiveReader:
     @classmethod
     def open(
         cls,
-        path: Union[str, Path, PathLike[str]],
+        path: str | Path | PathLike[str],
         mode: Literal["r", "r:", "r:gz", "r:zst"],
     ) -> Self:
         """
@@ -104,7 +104,7 @@ class ArchiveReader:
         """
 
     def unpack(
-        self, to: Union[str, Path, PathLike[str]], preserve_mtime: bool = True
+        self, to: str | Path | PathLike[str], preserve_mtime: bool = True
     ) -> None:
         """
         Unpack all contents of the archive and put them into the specified directory.
@@ -130,7 +130,7 @@ class ArchiveReader:
 
 @overload
 def open(
-    path: Union[str, Path, PathLike[str]], mode: Literal["w", "w:gz", "w:zst"]
+    path: str | Path | PathLike[str], mode: Literal["w", "w:gz", "w:zst"]
 ) -> ArchiveWriter:
     """
     Open a tar archive for writing.
@@ -149,7 +149,7 @@ def open(
 
 @overload
 def open(
-    path: Union[str, Path, PathLike[str]], mode: Literal["r", "r:", "r:gz", "r:zst"]
+    path: str | Path | PathLike[str], mode: Literal["r", "r:", "r:gz", "r:zst"]
 ) -> ArchiveReader:
     """
     Open a tar archive for reading.

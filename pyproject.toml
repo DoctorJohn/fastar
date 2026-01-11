@@ -54,7 +54,7 @@ dev = [
 features = ["pyo3/extension-module"]
 
 [tool.ruff.lint]
-extend-select = ["I"]
+extend-select = ["I", "UP"]
 
 [tool.mypy]
 check_untyped_defs = true

@@ -28,7 +28,7 @@ fn open(py: Python<'_>, path: PathBuf, mode: &str) -> PyResult<PyObject> {
     }
 }
 
-#[pymodule]
+#[pymodule(gil_used = false)]
 fn fastar(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<ArchiveWriter>()?;
     m.add_class::<ArchiveReader>()?;

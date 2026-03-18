@@ -2,6 +2,7 @@ import hashlib
 import os
 import sys
 import tarfile
+from concurrent.futures import ThreadPoolExecutor
 from random import randint
 
 import psutil
@@ -558,3 +559,28 @@ def test_unpack_raises_when_archive_entries_are_not_iterable(target_path, archiv
             ArchiveUnpackingError, match="failed to iterate over archive"
         ):
             reader.unpack(target_path)
+
+
+def test_unpack_raises_when_sent_to_another_thread(
+    source_path, target_path, archive_path, write_mode, read_mode
+):
+    input_dir = source_path / "dir"
+    input_dir.mkdir()
+    input_file = input_dir / "file.txt"
+    input_file.touch()
+
+    with tarfile.open(archive_path, write_mode) as archive:
+        archive.add(input_dir)
+        archive.add(input_file)
+
+    def worker(reader, target_path):
+        reader.unpack(target_path)
+
+    # pyo3's PanicException isn't exported to Python and inherits from BaseException
+    # see https://github.com/PyO3/pyo3/issues/3918
+    with pytest.raises(
+        BaseException, match="fastar::reader::ArchiveReader is unsendable"
+    ):
+        with ArchiveReader.open(archive_path, read_mode) as reader:
+            with ThreadPoolExecutor(max_workers=1) as tpe:
+                tpe.submit(worker, reader, target_path).result()

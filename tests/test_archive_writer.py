@@ -1,5 +1,7 @@
 import sys
 import tarfile
+import threading
+from concurrent.futures import ThreadPoolExecutor
 
 import psutil
 import pytest
@@ -1036,3 +1038,36 @@ def test_append_handles_arcnames_of_type_str(
     with tarfile.open(archive_path, read_mode) as archive:
         assert archive.getnames() == ["nested/file.txt"]
         assert archive.getmember("nested/file.txt").isfile()
+
+
+def test_multithreaded_append(
+    source_path, target_path, archive_path, write_mode, read_mode
+):
+    def worker(barrier, writer, target_path, lock, thread_index):
+        barrier.wait()
+        thread_target_path = target_path / f"thread_{thread_index}"
+        thread_target_path.touch()
+        with lock:
+            writer.append(thread_target_path)
+
+    num_workers = 4
+    barrier = threading.Barrier(num_workers)
+    lock = threading.Lock()
+
+    with ArchiveWriter.open(archive_path, write_mode) as writer:
+        with ThreadPoolExecutor(max_workers=num_workers) as tpe:
+            try:
+                futures = []
+                for i in range(num_workers):
+                    futures.append(
+                        tpe.submit(worker, barrier, writer, target_path, lock, i)
+                    )
+            finally:
+                # avoid deadlocks if any threads failed to spawn
+                if len(futures) < num_workers:
+                    barrier.abort()
+        # join spawned threads
+        [f.result() for f in futures]
+
+    with tarfile.open(archive_path, read_mode) as archive:
+        assert sorted(archive.getnames()) == [f"thread_{i}" for i in range(num_workers)]

@@ -1047,6 +1047,9 @@ def test_multithreaded_append(
         barrier.wait()
         thread_target_path = target_path / f"thread_{thread_index}"
         thread_target_path.touch()
+        # PyO3 ensures only one mutable borrow is allowed at a time se we use a
+        # lock. Calling append concurrently will raise "RuntimeError: already
+        # borrowed" here.
         with lock:
             writer.append(thread_target_path)
 

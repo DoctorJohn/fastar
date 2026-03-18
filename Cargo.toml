@@ -10,6 +10,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 flate2 = "1.1.4"
-pyo3 = "0.27.0"
+pyo3 = "0.28.2"
 tar = "0.4.44"
 zstd = "0.13.3"

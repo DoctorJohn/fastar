@@ -1074,3 +1074,17 @@ def test_multithreaded_append(
 
     with tarfile.open(archive_path, read_mode) as archive:
         assert sorted(archive.getnames()) == [f"thread_{i}" for i in range(num_workers)]
+
+
+def test_open_and_append_with_sparse_option_disabled(
+    source_path, archive_path, write_mode, read_mode
+):
+    file_path = source_path / "file.txt"
+    file_path.touch()
+
+    with ArchiveWriter.open(archive_path, write_mode, sparse=False) as writer:
+        writer.append(file_path)
+
+    with tarfile.open(archive_path, read_mode) as archive:
+        assert archive.getnames() == ["file.txt"]
+        assert archive.getmember("file.txt").isfile()

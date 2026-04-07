@@ -27,6 +27,8 @@ class ArchiveWriter:
         cls,
         path: str | Path | PathLike[str],
         mode: Literal["w", "w:gz", "w:zst"],
+        *,
+        sparse: bool = True,
     ) -> Self:
         """
         Open a tar archive for writing.
@@ -34,6 +36,7 @@ class ArchiveWriter:
         Args:
             path: Path to the archive file to create
             mode: Write mode - 'w' for uncompressed, 'w:gz' for gzip compressed, 'w:zst' for zstd compressed
+            sparse: When true and supported by the underlying filesystem, sparse file information is read from disk and empty segments are omitted from the archive.
 
         Returns:
             An ArchiveWriter instance
@@ -130,7 +133,10 @@ class ArchiveReader:
 
 @overload
 def open(
-    path: str | Path | PathLike[str], mode: Literal["w", "w:gz", "w:zst"]
+    path: str | Path | PathLike[str],
+    mode: Literal["w", "w:gz", "w:zst"],
+    *,
+    sparse: bool = True,
 ) -> ArchiveWriter:
     """
     Open a tar archive for writing.
@@ -138,6 +144,7 @@ def open(
     Args:
         path: Path to the archive file to create
         mode: Write mode - 'w' for uncompressed, 'w:gz' for gzip compressed, 'w:zst' for zstd compressed
+        sparse: When true and supported by the underlying filesystem, sparse file information is read from disk and empty segments are omitted from the archive.
 
     Returns:
         An ArchiveWriter instance

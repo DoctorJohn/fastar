@@ -11,11 +11,11 @@ use reader::ArchiveReader;
 use writer::ArchiveWriter;
 
 #[pyfunction]
-#[pyo3(signature = (path, mode))]
-fn open(py: Python<'_>, path: PathBuf, mode: &str) -> PyResult<Py<PyAny>> {
+#[pyo3(signature = (path, mode, sparse=true))]
+fn open(py: Python<'_>, path: PathBuf, mode: &str, sparse: bool) -> PyResult<Py<PyAny>> {
     match mode {
         "w" | "w:gz" | "w:zst" => {
-            let writer = ArchiveWriter::open(&py.get_type::<ArchiveWriter>(), py, path, mode)?;
+            let writer = ArchiveWriter::open(&py.get_type::<ArchiveWriter>(), py, path, mode, sparse)?;
             Ok(writer.into())
         }
         "r" | "r:" | "r:gz" | "r:zst" => {

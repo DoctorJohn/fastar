@@ -17,19 +17,21 @@ pub struct ArchiveWriter {
 #[pymethods]
 impl ArchiveWriter {
     #[classmethod]
-    #[pyo3(signature = (path, mode))]
+    #[pyo3(signature = (path, mode, sparse=true))]
     pub fn open(
         _cls: &Bound<'_, PyType>,
         py: Python<'_>,
         path: PathBuf,
         mode: &str,
+        sparse: bool,
     ) -> PyResult<Py<ArchiveWriter>> {
         match mode {
             "w:gz" => {
                 let file = File::create(path)?;
                 let enc = GzEncoder::new(file, Compression::default());
                 let writer: Box<dyn Write + Send + Sync> = Box::new(enc);
-                let builder = tar::Builder::new(writer);
+                let mut builder = tar::Builder::new(writer);
+                builder.sparse(sparse);
                 Py::new(
                     py,
                     ArchiveWriter {
@@ -41,7 +43,8 @@ impl ArchiveWriter {
                 let file = File::create(path)?;
                 let enc = ZstdEncoder::new(file, 0)?; // default compression level
                 let writer: Box<dyn Write + Send + Sync> = Box::new(enc);
-                let builder = tar::Builder::new(writer);
+                let mut builder = tar::Builder::new(writer);
+                builder.sparse(sparse);
                 Py::new(
                     py,
                     ArchiveWriter {
@@ -52,7 +55,8 @@ impl ArchiveWriter {
             "w" => {
                 let file = File::create(path)?;
                 let writer: Box<dyn Write + Send + Sync> = Box::new(file);
-                let builder = tar::Builder::new(writer);
+                let mut builder = tar::Builder::new(writer);
+                builder.sparse(sparse);
                 Py::new(
                     py,
                     ArchiveWriter {

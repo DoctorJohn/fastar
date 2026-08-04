@@ -19,6 +19,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
     "Topic :: Software Development :: Libraries",
@@ -34,13 +35,13 @@ repository = "https://github.com/DoctorJohn/fastar"
 documentation = "https://github.com/DoctorJohn/fastar"
 
 [build-system]
-requires = ["maturin>=1.9,<2.0"]
+requires = ["maturin>=1.14.1,<2.0"]
 build-backend = "maturin"
 
 [dependency-groups]
 dev = [
     "backports-zstd>=1.1.0 ; python_version >= '3.9' and python_version < '3.14'",
-    "maturin>=1.9.6",
+    "maturin>=1.14.1",
     "mypy>=1.14.1",
     "prek>=0.2.29",
     "psutil>=7.1.2",
